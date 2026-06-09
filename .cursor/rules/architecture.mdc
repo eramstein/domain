@@ -1,0 +1,44 @@
+---
+description: Architecture layer boundaries for Domain simulation game
+alwaysApply: true
+---
+
+# Architecture Rules
+
+## Layers (all under `src/`)
+
+| Layer   | Path            | Responsibility                          |
+|---------|-----------------|-----------------------------------------|
+| Types   | `src/types/`    | Interfaces only, no logic               |
+| Data    | `src/data/`     | Immutable JSON content                  |
+| State   | `src/state/`    | Reactive `GameState` singleton          |
+| Engine  | `src/engine/`   | All GameState mutations                 |
+| UI      | `src/ui/`       | Rendering and input                     |
+
+## Hard Rules
+
+1. Vue components **never** mutate `GameState` directly
+2. UI calls Engine through `src/engine/index.ts` exports
+3. UI reads GameState via `useGameState()` from `@state/useGameState`
+4. Pinia stores hold **UI state only** (selection, layout, modals)
+5. Static content stays in `src/data/*.json` — never copy wholesale into GameState
+
+## Engine Organization
+
+Group by domain: `src/engine/time/`, `src/engine/characters/`, etc.
+
+Prefer pure functions:
+
+```typescript
+// ✅ Engine mutates via function
+export function advanceTurn(state: GameState): void {
+  state.date = nextDate(state.date)
+}
+
+// ❌ UI mutates directly
+gameState.date.turn += 1
+```
+
+## Adding Features
+
+Types → JSON content → Engine module → `src/engine/index.ts` export → UI wiring

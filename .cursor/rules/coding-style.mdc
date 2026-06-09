@@ -1,0 +1,51 @@
+---
+description: Vue and TypeScript coding conventions for Domain
+globs: "src/**/*.{vue,ts}"
+alwaysApply: false
+---
+
+# Coding Style
+
+## Vue Components
+
+- Always use `<script setup lang="ts">`
+- No Options API
+- Props and emits must be typed
+- Keep components presentational; call Engine for mutations
+
+```vue
+<script setup lang="ts">
+import { engineAdvanceTurn } from '@engine/index'
+import { useGameState } from '@state/useGameState'
+
+const gameState = useGameState()
+
+function handleAdvance(): void {
+  engineAdvanceTurn()
+}
+</script>
+```
+
+## TypeScript
+
+- TypeScript everywhere; no `.js` source files
+- Use `interface` for object shapes, `type` for unions/aliases
+- Avoid classes unless wrapping a third-party library
+- Prefer named exports over default exports (except Vue SFCs)
+
+## Imports
+
+Use path aliases: `@engine/`, `@state/`, `@ui/`, `@data/`, `@/types`
+
+## Naming
+
+- Engine actions: `engineAdvanceTurn`, `engineSpawnCharacter` (exported from `src/engine/index.ts`)
+- Engine internals: `advanceTurn`, `spawnFromTemplate` (domain verbs)
+- Pinia stores: `useUiStore`, `use<Name>Store`
+- Types: PascalCase nouns (`GameState`, `ItemDefinition`)
+
+## Files
+
+- One primary export per Engine module
+- Colocate component styles with `<style scoped>`
+- JSON content uses kebab-case filenames

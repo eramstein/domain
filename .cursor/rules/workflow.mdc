@@ -1,0 +1,49 @@
+---
+description: Development workflow for Domain hobby project
+alwaysApply: true
+---
+
+# Workflow
+
+## Scope
+
+This is a long-running hobby project. Prefer small, complete slices over large refactors.
+
+## Before Coding
+
+1. Read `docs/current-focus.md` for active priorities
+2. Read `docs/architecture.md` if touching state or engine boundaries
+
+## Implementation Order
+
+1. Extend types in `src/types/`
+2. Add or update `src/data/*.json` content
+3. Implement Engine logic in `src/engine/<domain>/`
+4. Export public action from `src/engine/index.ts`
+5. Wire UI in `src/ui/views/` or `src/ui/components/`
+6. Update `docs/current-focus.md` when shifting priorities
+
+## Documentation
+
+- Architecture changes → add ADR in `docs/decisions/`
+- New systems → note in `docs/game-design.md`
+- Completed milestones → check off `docs/roadmap.md`
+
+## Commands
+
+```bash
+npm run dev      # local development
+npm run build    # typecheck and production build
+npm run preview  # preview production build
+```
+
+## Testing
+
+No unit tests unless explicitly requested. Manual verification via the demo screen is sufficient for scaffold work.
+
+## Do Not
+
+- Add a backend or API layer
+- Store UI state in `GameState`
+- Skip Engine layer for "quick" mutations in components
+- Create markdown files beyond `docs/` unless asked
