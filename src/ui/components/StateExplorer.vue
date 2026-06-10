@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import type { Character, GameTime, Place, Region, Resource } from '@/types'
+import type {
+  Character,
+  GameTime,
+  Place,
+  Region,
+  Resource,
+  ResourceSubtype,
+  ResourceType,
+} from '@/types'
 
 const props = defineProps<{
   time: GameTime
@@ -29,6 +37,35 @@ const regionsWithPlaces = computed(() =>
 
 function placeName(placeId: string): string {
   return placeById.value.get(placeId)?.name ?? '—'
+}
+
+const resourceTypeLabels: Record<ResourceType, string> = {
+  constructionMaterial: 'Construction material',
+  food: 'Food',
+  valuable: 'Valuable',
+}
+
+const resourceSubtypeLabels: Record<ResourceSubtype, string> = {
+  wood: 'Wood',
+  stone: 'Stone',
+  clay: 'Clay',
+  metal: 'Metal',
+  reed: 'Reed',
+  grain: 'Grain',
+  meat: 'Meat',
+  fish: 'Fish',
+  vegetable: 'Vegetable',
+  fruit: 'Fruit',
+  dairy: 'Dairy',
+  beverage: 'Beverage',
+  coin: 'Coin',
+  spice: 'Spice',
+  cloth: 'Cloth',
+  salt: 'Salt',
+}
+
+function resourceCategory(resource: Resource): string {
+  return `${resourceTypeLabels[resource.type]} · ${resourceSubtypeLabels[resource.subtype]}`
 }
 </script>
 
@@ -88,7 +125,10 @@ function placeName(placeId: string): string {
       <h3>Resources</h3>
       <ul>
         <li v-for="resource in resources" :key="resource.id">
-          <span class="name">{{ resource.name }}</span>
+          <span class="resource-label">
+            <span class="name">{{ resource.name }}</span>
+            <span class="category">{{ resourceCategory(resource) }}</span>
+          </span>
           <span class="amount">{{ resource.amount }}</span>
         </li>
         <li v-if="resources.length === 0" class="empty">—</li>
@@ -138,11 +178,23 @@ li {
   font-size: 0.95rem;
 }
 
-.character-label {
+.character-label,
+.resource-label {
   display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.character-label {
+  flex-direction: row;
   align-items: baseline;
   gap: 0.5rem;
-  min-width: 0;
+}
+
+.category {
+  font-size: 0.8rem;
+  color: var(--text-muted);
 }
 
 .name {

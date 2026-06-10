@@ -21,5 +21,5 @@ export const actionSeeds = actionsJson as readonly ActionSeed[]
 export const characterSeeds: readonly CharacterSeed[] = charactersJson
 export const regionSeeds: readonly RegionSeed[] = regionsJson
 export const placeSeeds: readonly PlaceSeed[] = placesJson
-export const resourceSeeds: readonly ResourceSeed[] = resourcesJson
+export const resourceSeeds = resourcesJson as readonly ResourceSeed[]
 export const eventSeeds: readonly EventSeed[] = eventsJson

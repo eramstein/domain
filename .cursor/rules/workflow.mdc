@@ -29,6 +29,8 @@ This is a long-running hobby project. Prefer small, complete slices over large r
 - New or updated systems → update documents in `docs/systems/`
 - Completed milestones → check off `docs/roadmap.md`
 
+System documents are authoritative for behavior.
+
 ## Commands
 
 ```bash
@@ -47,3 +49,4 @@ No unit tests unless explicitly requested. Manual verification via the demo scre
 - Store UI state in `GameState`
 - Skip Engine layer for "quick" mutations in components
 - Create markdown files beyond `docs/` unless asked
+- Silently change documented behavior

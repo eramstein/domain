@@ -38,6 +38,8 @@ export function initializeGame(): void {
   gameState.resources = resourceSeeds.map((seed) => ({
     id: seed.id,
     name: seed.name,
+    type: seed.type,
+    subtype: seed.subtype,
     amount: seed.initialAmount,
   }))
 

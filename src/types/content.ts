@@ -19,10 +19,32 @@ export interface PlaceSeed {
   regionId: string
 }
 
+export type ResourceType = 'constructionMaterial' | 'food' | 'valuable'
+
+export type ResourceSubtype =
+  | 'wood'
+  | 'stone'
+  | 'clay'
+  | 'metal'
+  | 'reed'
+  | 'grain'
+  | 'meat'
+  | 'fish'
+  | 'vegetable'
+  | 'fruit'
+  | 'dairy'
+  | 'beverage'
+  | 'coin'
+  | 'spice'
+  | 'cloth'
+  | 'salt'
+
 /** Static resource seed with starting amount. */
 export interface ResourceSeed {
   id: string
   name: string
+  type: ResourceType
+  subtype: ResourceSubtype
   initialAmount: number
 }
 

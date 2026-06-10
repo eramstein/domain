@@ -19,6 +19,8 @@ export type {
   RegionSeed,
   PlaceSeed,
   ResourceSeed,
+  ResourceType,
+  ResourceSubtype,
   EventSeed,
   ActionParameterSeed,
   ActionSeed,

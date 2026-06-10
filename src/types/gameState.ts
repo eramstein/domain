@@ -1,4 +1,5 @@
 import type { TurnBudget } from './actions'
+import type { ResourceSubtype, ResourceType } from './content'
 
 /** A geographic zone containing one or more places. */
 export interface Region {
@@ -26,6 +27,8 @@ export interface Place {
 export interface Resource {
   id: string
   name: string
+  type: ResourceType
+  subtype: ResourceSubtype
   amount: number
 }
 

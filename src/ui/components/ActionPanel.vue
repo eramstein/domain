@@ -5,7 +5,6 @@ import {
   engineExecuteAction,
   engineFindActionsInText,
   engineGetActionDuration,
-  engineGetPlaceById,
 } from '@engine/index'
 import { useGameState } from '@state/useGameState'
 
@@ -49,16 +48,6 @@ async function submitAction(): Promise<void> {
         }
         return
       }
-
-      if (action.actionId === 'goto') {
-        const placeId = action.parameters.placeId
-        const place =
-          typeof placeId === 'string'
-            ? engineGetPlaceById(placeId)
-            : undefined
-        const cost = duration === 'long' ? 'long' : 'short'
-        feedback.value = `You travel to ${place?.name ?? 'your destination'} (${cost} action).`
-      }
     }
 
     actionText.value = ''
@@ -78,6 +67,7 @@ async function submitAction(): Promise<void> {
         rows="3"
         placeholder="I go to the kitchen…"
         :disabled="isResolving || !player"
+        @keydown.enter.exact.prevent="submitAction"
       />
       <button
         type="submit"

@@ -19,6 +19,15 @@ import {
   getRegionForPlace,
   goTo,
 } from './places'
+import {
+  addResourceStock,
+  getResourceAmount,
+  getResourceById,
+  getResourcesBySubtype,
+  getResourcesByType,
+  hasResourceStock,
+  subtractResourceStock,
+} from './resources'
 import { getTimeString, passTurn } from './time'
 
 /** Start or restart the game from static content. */
@@ -72,6 +81,54 @@ export function engineCreatePlace(
   place: Parameters<typeof createPlace>[1],
 ): void {
   createPlace(gameState, place)
+}
+
+/** Look up a resource stock entry by id. */
+export function engineGetResourceById(resourceId: string) {
+  return getResourceById(gameState, resourceId)
+}
+
+/** Return all stock entries matching a resource type. */
+export function engineGetResourcesByType(
+  type: Parameters<typeof getResourcesByType>[1],
+) {
+  return getResourcesByType(gameState, type)
+}
+
+/** Return all stock entries matching a resource subtype. */
+export function engineGetResourcesBySubtype(
+  subtype: Parameters<typeof getResourcesBySubtype>[1],
+) {
+  return getResourcesBySubtype(gameState, subtype)
+}
+
+/** Return current stock amount for a resource, or 0 if none. */
+export function engineGetResourceAmount(resourceId: string): number {
+  return getResourceAmount(gameState, resourceId)
+}
+
+/** Check whether stock is sufficient without mutating state. */
+export function engineHasResourceStock(
+  resourceId: string,
+  amount: number,
+): boolean {
+  return hasResourceStock(gameState, resourceId, amount)
+}
+
+/** Increase stock for a resource. */
+export function engineAddResourceStock(
+  resourceId: string,
+  amount: number,
+): void {
+  addResourceStock(gameState, resourceId, amount)
+}
+
+/** Decrease stock for a resource. */
+export function engineSubtractResourceStock(
+  resourceId: string,
+  amount: number,
+): void {
+  subtractResourceStock(gameState, resourceId, amount)
 }
 
 /** Parse free-text into resolved actions via the LLM. */

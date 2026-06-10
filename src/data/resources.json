@@ -1,7 +1,142 @@
 [
   {
-    "id": "wood",
-    "name": "Wood",
-    "initialAmount": 30
+    "id": "oak-timber",
+    "name": "Oak Timber",
+    "type": "constructionMaterial",
+    "subtype": "wood",
+    "initialAmount": 28
+  },
+  {
+    "id": "pine-timber",
+    "name": "Pine Timber",
+    "type": "constructionMaterial",
+    "subtype": "wood",
+    "initialAmount": 16
+  },
+  {
+    "id": "limestone",
+    "name": "Limestone",
+    "type": "constructionMaterial",
+    "subtype": "stone",
+    "initialAmount": 42
+  },
+  {
+    "id": "fieldstone",
+    "name": "Fieldstone",
+    "type": "constructionMaterial",
+    "subtype": "stone",
+    "initialAmount": 24
+  },
+  {
+    "id": "river-clay",
+    "name": "River Clay",
+    "type": "constructionMaterial",
+    "subtype": "clay",
+    "initialAmount": 36
+  },
+  {
+    "id": "wrought-iron",
+    "name": "Wrought Iron",
+    "type": "constructionMaterial",
+    "subtype": "metal",
+    "initialAmount": 10
+  },
+  {
+    "id": "marsh-reeds",
+    "name": "Marsh Reeds",
+    "type": "constructionMaterial",
+    "subtype": "reed",
+    "initialAmount": 32
+  },
+  {
+    "id": "wheat",
+    "name": "Wheat",
+    "type": "food",
+    "subtype": "grain",
+    "initialAmount": 85
+  },
+  {
+    "id": "barley",
+    "name": "Barley",
+    "type": "food",
+    "subtype": "grain",
+    "initialAmount": 48
+  },
+  {
+    "id": "salted-beef",
+    "name": "Salted Beef",
+    "type": "food",
+    "subtype": "meat",
+    "initialAmount": 18
+  },
+  {
+    "id": "dried-herring",
+    "name": "Dried Herring",
+    "type": "food",
+    "subtype": "fish",
+    "initialAmount": 14
+  },
+  {
+    "id": "turnips",
+    "name": "Turnips",
+    "type": "food",
+    "subtype": "vegetable",
+    "initialAmount": 40
+  },
+  {
+    "id": "apples",
+    "name": "Apples",
+    "type": "food",
+    "subtype": "fruit",
+    "initialAmount": 22
+  },
+  {
+    "id": "cheese",
+    "name": "Cheese",
+    "type": "food",
+    "subtype": "dairy",
+    "initialAmount": 20
+  },
+  {
+    "id": "small-ale",
+    "name": "Small Ale",
+    "type": "food",
+    "subtype": "beverage",
+    "initialAmount": 35
+  },
+  {
+    "id": "silver-pennies",
+    "name": "Silver Pennies",
+    "type": "valuable",
+    "subtype": "coin",
+    "initialAmount": 120
+  },
+  {
+    "id": "black-pepper",
+    "name": "Black Pepper",
+    "type": "valuable",
+    "subtype": "spice",
+    "initialAmount": 6
+  },
+  {
+    "id": "wool-broadcloth",
+    "name": "Wool Broadcloth",
+    "type": "valuable",
+    "subtype": "cloth",
+    "initialAmount": 12
+  },
+  {
+    "id": "rock-salt",
+    "name": "Rock Salt",
+    "type": "valuable",
+    "subtype": "salt",
+    "initialAmount": 26
+  },
+  {
+    "id": "venison",
+    "name": "Venison",
+    "type": "food",
+    "subtype": "meat",
+    "initialAmount": 9
   }
 ]

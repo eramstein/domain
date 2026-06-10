@@ -1,8 +1,10 @@
 import type { GameState, ResolvedAction } from '@/types'
 
+import { appendNarration } from '../narration/appendNarration'
 import { canExecuteAction } from './canExecuteAction'
 import { dispatchAction } from './dispatch'
 import { getActionDefinition } from './definitions'
+import { formatActionNarration } from './formatActionNarration'
 import { getActionDuration } from './getActionDuration'
 
 export function executeAction(
@@ -30,6 +32,16 @@ export function executeAction(
     if (character) {
       character.turnBudget.longActionUsed = true
     }
+  }
+
+  const narration = formatActionNarration(
+    state,
+    characterId,
+    resolved,
+    duration,
+  )
+  if (narration) {
+    appendNarration(state, narration)
   }
 
   return true
