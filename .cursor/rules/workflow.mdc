@@ -26,7 +26,7 @@ This is a long-running hobby project. Prefer small, complete slices over large r
 ## Documentation
 
 - Architecture changes → add ADR in `docs/decisions/`
-- New systems → note in `docs/game-design.md`
+- New or updated systems → update documents in `docs/systems/`
 - Completed milestones → check off `docs/roadmap.md`
 
 ## Commands

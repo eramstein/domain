@@ -6,8 +6,9 @@ import { INITIAL_GAME_TIME } from '@/types/time'
 function createEmptyGameState(): GameState {
   return {
     time: { ...INITIAL_GAME_TIME },
-    characters: [],
+    regions: [],
     places: [],
+    characters: [],
     resources: [],
     narration: [],
   }
@@ -22,8 +23,9 @@ export const gameState = reactive<GameState>(createEmptyGameState())
 export function resetGameState(): void {
   const empty = createEmptyGameState()
   gameState.time = empty.time
-  gameState.characters = empty.characters
+  gameState.regions = empty.regions
   gameState.places = empty.places
+  gameState.characters = empty.characters
   gameState.resources = empty.resources
   gameState.narration = empty.narration
 }

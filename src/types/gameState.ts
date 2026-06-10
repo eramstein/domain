@@ -1,14 +1,25 @@
+import type { TurnBudget } from './actions'
+
+/** A geographic zone containing one or more places. */
+export interface Region {
+  id: string
+  name: string
+}
+
 /** A character in the simulation. */
 export interface Character {
   id: string
   name: string
   isPlayer: boolean
+  placeId: string
+  turnBudget: TurnBudget
 }
 
-/** A discrete location in the domain. */
+/** A discrete location within a region. */
 export interface Place {
   id: string
   name: string
+  regionId: string
 }
 
 /** A quantified resource stockpile. */
@@ -34,8 +45,9 @@ export type { GameTime, TimePeriod } from './time'
  */
 export interface GameState {
   time: GameTime
-  characters: Character[]
+  regions: Region[]
   places: Place[]
+  characters: Character[]
   resources: Resource[]
   narration: NarrationEntry[]
 }

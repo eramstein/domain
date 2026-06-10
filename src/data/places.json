@@ -1,6 +1,17 @@
 [
   {
-    "id": "castle",
-    "name": "Ashwick Keep"
+    "id": "castle-great-hall",
+    "name": "Great Hall",
+    "regionId": "castle"
+  },
+  {
+    "id": "castle-kitchen",
+    "name": "Kitchen",
+    "regionId": "castle"
+  },
+  {
+    "id": "forest-clearing",
+    "name": "Forest Clearing",
+    "regionId": "forest"
   }
 ]

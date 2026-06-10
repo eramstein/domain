@@ -17,6 +17,9 @@ All application code lives under `src/`. Project-level folders (`docs/`, `.curso
 │  src/state/   Reactive GameState singleton              │
 │               Runtime simulation data only              │
 ├─────────────────────────────────────────────────────────┤
+│  src/services/ External I/O (LLM, database, …)          │
+│               No direct GameState ownership             │
+├─────────────────────────────────────────────────────────┤
 │  src/data/    Static JSON content (immutable)           │
 │  src/types/   Shared TypeScript interfaces              │
 └─────────────────────────────────────────────────────────┘
@@ -91,12 +94,45 @@ Content is **immutable** and never written into `GameState` wholesale. Engine co
 
 Shared interfaces for runtime state (`GameState`) and static content (item/event definitions). Keep types free of implementation logic.
 
+## Services (`src/services/`)
+
+Services wrap **external systems** — APIs and persistence that live outside the simulation. They sit beside the core layers and are called when the game needs outside I/O.
+
+```
+src/services/
+  llm/           Mistral chat completions (LLMService)
+  database/      (planned) Persistence and queries
+```
+
+**Rules:**
+
+- Services **do not** own or mutate `GameState`; Engine applies their results to state when needed
+- Prefer calling services from **Engine** modules, not directly from Vue components (keeps side effects out of the UI layer)
+- Each service module exposes a small, focused API (e.g. `llmService.chat()`)
+- When no credentials are configured, services may degrade gracefully (e.g. mock LLM responses) so local dev still runs
+
+### Secrets and environment
+
+API keys and other secrets live in a **root `.env` file** (never commit this file). Vite exposes variables prefixed with `VITE_` to application code via `import.meta.env`.
+
+| Variable               | Used by              |
+| ---------------------- | -------------------- |
+| `VITE_MISTRAL_API_KEY` | `src/services/llm/`  |
+
+Restart the dev server after changing `.env`.
+
 ## Data Flow Example
 
 1. Player clicks **Advance Turn** in `DemoView.vue`
 2. Component calls `engineAdvanceTurn()` from `src/engine/index.ts`
 3. Engine module `advanceTurn()` mutates `gameState`
 4. Vue reactivity updates all bound UI automatically
+
+### Services example
+
+1. Engine module needs NPC dialogue and calls `llmService.chat(messages)`
+2. `LLMService` reads `VITE_MISTRAL_API_KEY` from the environment and calls the Mistral API
+3. Engine receives the text, writes any simulation updates to `gameState`, and returns control to the UI
 
 ## Path Aliases
 
@@ -108,6 +144,7 @@ Shared interfaces for runtime state (`GameState`) and static content (item/event
 | `@ui/*`     | `src/ui/`     |
 | `@data/*`   | `src/data/`   |
 | `@/types`   | `src/types/`  |
+| `@/services/*` | `src/services/` (via `@` → `src`) |
 
 
 ## Adding a New Feature
@@ -115,6 +152,7 @@ Shared interfaces for runtime state (`GameState`) and static content (item/event
 1. Define or extend types in `src/types/`
 2. Add static content to `src/data/*.json` if needed
 3. Implement Engine logic in the appropriate `src/engine/<domain>/` module
-4. Export a named action from `src/engine/index.ts`
-5. Wire UI to call the Engine action and render resulting state
+4. Add or extend a service in `src/services/<name>/` if the feature needs external I/O
+5. Export a named action from `src/engine/index.ts`
+6. Wire UI to call the Engine action and render resulting state
 

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "goto",
+    "name": "Go to place",
+    "description": "Move the character to a different place in the world.",
+    "parameters": [
+      {
+        "name": "placeId",
+        "type": "string",
+        "description": "The id of the destination place.",
+        "enumSource": "places"
+      }
+    ],
+    "handler": "places.goTo"
+  }
+]

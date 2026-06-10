@@ -4,6 +4,7 @@ import { computed } from 'vue'
 import { engineGetTimeString, enginePassTurn } from '@engine/index'
 import { useGameState } from '@state/useGameState'
 
+import ActionPanel from '../components/ActionPanel.vue'
 import NarrationPanel from '../components/NarrationPanel.vue'
 import StateExplorer from '../components/StateExplorer.vue'
 
@@ -19,14 +20,16 @@ function passTurn(): void {
   <div class="game-view">
     <div class="main-column">
       <NarrationPanel :entries="gameState.narration" />
+      <ActionPanel />
       <button type="button" class="pass-turn" @click="passTurn">
-        Pass turn
+        End turn
       </button>
     </div>
     <StateExplorer
       :time="gameState.time"
       :time-string="timeString"
       :characters="gameState.characters"
+      :regions="gameState.regions"
       :places="gameState.places"
       :resources="gameState.resources"
     />

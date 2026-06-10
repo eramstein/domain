@@ -2,6 +2,7 @@ import {
   characterSeeds,
   eventSeeds,
   placeSeeds,
+  regionSeeds,
   resourceSeeds,
 } from '@data/index'
 import { INITIAL_GAME_TIME } from '@/types/time'
@@ -15,15 +16,23 @@ export function initializeGame(): void {
 
   gameState.time = { ...INITIAL_GAME_TIME }
 
-  gameState.characters = characterSeeds.map((seed) => ({
+  gameState.regions = regionSeeds.map((seed) => ({
     id: seed.id,
     name: seed.name,
-    isPlayer: seed.isPlayer,
   }))
 
   gameState.places = placeSeeds.map((seed) => ({
     id: seed.id,
     name: seed.name,
+    regionId: seed.regionId,
+  }))
+
+  gameState.characters = characterSeeds.map((seed) => ({
+    id: seed.id,
+    name: seed.name,
+    isPlayer: seed.isPlayer,
+    placeId: seed.initialPlaceId,
+    turnBudget: { longActionUsed: false },
   }))
 
   gameState.resources = resourceSeeds.map((seed) => ({

@@ -1,6 +1,8 @@
 export {
   gameConfig,
+  actionSeeds,
   characterSeeds,
+  regionSeeds,
   placeSeeds,
   resourceSeeds,
   eventSeeds,

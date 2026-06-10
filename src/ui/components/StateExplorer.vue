@@ -1,13 +1,35 @@
 <script setup lang="ts">
-import type { Character, GameTime, Place, Resource } from '@/types'
+import { computed } from 'vue'
 
-defineProps<{
+import type { Character, GameTime, Place, Region, Resource } from '@/types'
+
+const props = defineProps<{
   time: GameTime
   timeString: string
   characters: readonly Character[]
+  regions: readonly Region[]
   places: readonly Place[]
   resources: readonly Resource[]
 }>()
+
+const placeById = computed(() => {
+  const map = new Map<string, Place>()
+  for (const place of props.places) {
+    map.set(place.id, place)
+  }
+  return map
+})
+
+const regionsWithPlaces = computed(() =>
+  props.regions.map((region) => ({
+    region,
+    places: props.places.filter((place) => place.regionId === region.id),
+  })),
+)
+
+function placeName(placeId: string): string {
+  return placeById.value.get(placeId)?.name ?? '—'
+}
 </script>
 
 <template>
@@ -24,8 +46,19 @@ defineProps<{
       <h3>Characters</h3>
       <ul>
         <li v-for="character in characters" :key="character.id">
-          <span class="name">{{ character.name }}</span>
-          <span v-if="character.isPlayer" class="tag">you</span>
+          <span class="character-label">
+            <span class="name">{{ character.name }}</span>
+            <span v-if="character.isPlayer" class="tag">you</span>
+          </span>
+          <span class="meta">
+            <span class="location">{{ placeName(character.placeId) }}</span>
+            <span
+              v-if="character.isPlayer && character.turnBudget.longActionUsed"
+              class="budget"
+            >
+              long used
+            </span>
+          </span>
         </li>
         <li v-if="characters.length === 0" class="empty">—</li>
       </ul>
@@ -33,12 +66,22 @@ defineProps<{
 
     <div class="section">
       <h3>Places</h3>
-      <ul>
-        <li v-for="place in places" :key="place.id">
-          {{ place.name }}
+      <ul v-if="regionsWithPlaces.length > 0" class="region-list">
+        <li
+          v-for="{ region, places: regionPlaces } in regionsWithPlaces"
+          :key="region.id"
+          class="region-group"
+        >
+          <span class="region-name">{{ region.name }}</span>
+          <ul class="place-list">
+            <li v-for="place in regionPlaces" :key="place.id">
+              {{ place.name }}
+            </li>
+            <li v-if="regionPlaces.length === 0" class="empty">—</li>
+          </ul>
         </li>
-        <li v-if="places.length === 0" class="empty">—</li>
       </ul>
+      <p v-else class="empty">—</p>
     </div>
 
     <div class="section">
@@ -95,8 +138,35 @@ li {
   font-size: 0.95rem;
 }
 
+.character-label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
 .name {
   font-weight: 500;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  flex-shrink: 0;
+}
+
+.location {
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.budget {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .amount {
@@ -112,6 +182,30 @@ li {
 }
 
 .empty {
+  color: var(--text-muted);
+}
+
+.region-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.region-group {
+  display: block;
+  padding: 0;
+}
+
+.region-name {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.place-list li {
+  padding: 0.2rem 0 0.2rem 0.75rem;
+  font-size: 0.9rem;
   color: var(--text-muted);
 }
 

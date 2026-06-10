@@ -7,13 +7,14 @@ alwaysApply: true
 
 ## Layers (all under `src/`)
 
-| Layer   | Path            | Responsibility                          |
-|---------|-----------------|-----------------------------------------|
-| Types   | `src/types/`    | Interfaces only, no logic               |
-| Data    | `src/data/`     | Immutable JSON content                  |
-| State   | `src/state/`    | Reactive `GameState` singleton          |
-| Engine  | `src/engine/`   | All GameState mutations                 |
-| UI      | `src/ui/`       | Rendering and input                     |
+| Layer    | Path              | Responsibility                          |
+|----------|-------------------|-----------------------------------------|
+| Types    | `src/types/`      | Interfaces only, no logic               |
+| Data     | `src/data/`       | Immutable JSON content                  |
+| State    | `src/state/`      | Reactive `GameState` singleton          |
+| Engine   | `src/engine/`     | All GameState mutations                 |
+| Services | `src/services/`   | External I/O (LLM, database, …)         |
+| UI       | `src/ui/`         | Rendering and input                     |
 
 ## Hard Rules
 
@@ -22,6 +23,8 @@ alwaysApply: true
 3. UI reads GameState via `useGameState()` from `@state/useGameState`
 4. Pinia stores hold **UI state only** (selection, layout, modals)
 5. Static content stays in `src/data/*.json` — never copy wholesale into GameState
+6. Services wrap external APIs; they do **not** mutate `GameState` — Engine calls services and applies results
+7. Secrets live in root `.env` (gitignored); use `VITE_`-prefixed vars for client-side config (e.g. `VITE_MISTRAL_API_KEY`)
 
 ## Engine Organization
 
@@ -41,4 +44,4 @@ gameState.date.turn += 1
 
 ## Adding Features
 
-Types → JSON content → Engine module → `src/engine/index.ts` export → UI wiring
+Types → JSON content → Engine module → (optional) Service → `src/engine/index.ts` export → UI wiring
