@@ -12,6 +12,10 @@
   {
     "id": "forest-clearing",
     "name": "Forest Clearing",
-    "regionId": "forest"
+    "regionId": "forest",
+    "naturalResources": [
+      { "resourceId": "oak-timber", "abundance": 3 },
+      { "resourceId": "venison", "abundance": 1 }
+    ]
   }
 ]

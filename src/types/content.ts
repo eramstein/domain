@@ -12,11 +12,19 @@ export interface RegionSeed {
   name: string
 }
 
+/** A natural resource occurrence at a place, loaded from JSON. */
+export interface NaturalResourceSeed {
+  resourceId: string
+  /** 0–3; defaults to 1 when omitted. */
+  abundance?: number
+}
+
 /** Static place seed loaded from JSON. */
 export interface PlaceSeed {
   id: string
   name: string
   regionId: string
+  naturalResources?: NaturalResourceSeed[]
 }
 
 export type ResourceType = 'constructionMaterial' | 'food' | 'valuable'

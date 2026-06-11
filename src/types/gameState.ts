@@ -16,11 +16,19 @@ export interface Character {
   turnBudget: TurnBudget
 }
 
+/** A natural resource occurrence at a place. */
+export interface NaturalResource {
+  resourceId: string
+  /** How much is present, from 0 (none) to 3 (abundant). */
+  abundance: number
+}
+
 /** A discrete location within a region. */
 export interface Place {
   id: string
   name: string
   regionId: string
+  naturalResources: readonly NaturalResource[]
 }
 
 /** A quantified resource stockpile. */

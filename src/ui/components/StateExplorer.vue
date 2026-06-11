@@ -28,6 +28,18 @@ const placeById = computed(() => {
   return map
 })
 
+const resourceById = computed(() => {
+  const map = new Map<string, Resource>()
+  for (const resource of props.resources) {
+    map.set(resource.id, resource)
+  }
+  return map
+})
+
+function resourceName(resourceId: string): string {
+  return resourceById.value.get(resourceId)?.name ?? resourceId
+}
+
 const regionsWithPlaces = computed(() =>
   props.regions.map((region) => ({
     region,
@@ -111,8 +123,20 @@ function resourceCategory(resource: Resource): string {
         >
           <span class="region-name">{{ region.name }}</span>
           <ul class="place-list">
-            <li v-for="place in regionPlaces" :key="place.id">
-              {{ place.name }}
+            <li v-for="place in regionPlaces" :key="place.id" class="place-item">
+              <span class="place-name">{{ place.name }}</span>
+              <ul
+                v-if="place.naturalResources.length > 0"
+                class="natural-resource-list"
+              >
+                <li
+                  v-for="naturalResource in place.naturalResources"
+                  :key="naturalResource.resourceId"
+                >
+                  <span>{{ resourceName(naturalResource.resourceId) }}</span>
+                  <span class="abundance">{{ naturalResource.abundance }}</span>
+                </li>
+              </ul>
             </li>
             <li v-if="regionPlaces.length === 0" class="empty">—</li>
           </ul>
@@ -255,10 +279,29 @@ li {
   font-weight: 500;
 }
 
-.place-list li {
+.place-list .place-item {
+  display: block;
   padding: 0.2rem 0 0.2rem 0.75rem;
   font-size: 0.9rem;
   color: var(--text-muted);
+}
+
+.place-name {
+  display: block;
+}
+
+.natural-resource-list {
+  margin: 0.15rem 0 0;
+  padding-left: 0.75rem;
+}
+
+.natural-resource-list li {
+  padding: 0.1rem 0;
+  font-size: 0.8rem;
+}
+
+.abundance {
+  font-variant-numeric: tabular-nums;
 }
 
 .time-date {

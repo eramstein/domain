@@ -9,36 +9,18 @@ alwaysApply: true
 
 Long-running hobby project. Prefer small, complete slices over large refactors.
 
-## Before Coding
+## When implementing a feature
 
-1. Read `docs/current-focus.md` for priorities
-2. Read `docs/architecture.md` when touching state or engine boundaries
-3. Read the target system doc in `docs/systems/` (and 2–3 similar ones for new systems)
-4. System documents are authoritative for behavior
-
-## Implementation Order
-
-1. Types in `src/types/`
-2. Static content in `src/data/*.json`
-3. Engine logic in `src/engine/<domain>/`
-4. Export action from `src/engine/index.ts`
-5. Wire UI in `src/ui/views/` or `src/ui/components/`
-6. Update `docs/current-focus.md` when shifting priorities
-
-## New or Updated Systems
-
-**Review** (no code yet): check consistency with architecture and peer systems; flag gaps and ambiguities; propose doc updates. Wait for approval.
-
-**Plan**: list affected areas and files. Wait for approval.
-
-**Implement**: code, verify acceptance criteria, update docs.
+1. Read the feature document.
+2. Read all referenced system documents in `docs/systems/`.
+3. Read architecture rules.
+4. Create plan.
+5. Implement feature.
+6. Update impacted systems documents.
 
 ## Documentation
 
-- Architecture changes → ADR in `docs/decisions/`
 - New/updated systems → `docs/systems/`
-- Milestones → check off `docs/roadmap.md`
-- Do not create markdown outside `docs/` unless asked
 
 ## Commands & Testing
 
@@ -49,10 +31,3 @@ npm run preview  # preview production build
 ```
 
 No unit tests unless requested. Manual verification via demo screen is sufficient.
-
-## Do Not
-
-- Add a backend or API layer
-- Store UI state in `GameState`
-- Skip Engine for "quick" mutations in components
-- Silently change documented behavior

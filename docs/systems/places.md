@@ -48,15 +48,25 @@ Static content defines:
 ]
 ```
 
-**Places** — Each place has a stable id, display name, and parent region id.
+**Places** — Each place has a stable id, display name, parent region id, and zero or more natural resources.
 
 ```json
 [
   { "id": "castle-great-hall", "name": "Great Hall", "regionId": "castle" },
   { "id": "castle-kitchen", "name": "Kitchen", "regionId": "castle" },
-  { "id": "forest-clearing", "name": "Forest Clearing", "regionId": "forest" }
+  {
+    "id": "forest-clearing",
+    "name": "Forest Clearing",
+    "regionId": "forest",
+    "naturalResources": [
+      { "resourceId": "oak-timber", "abundance": 3 },
+      { "resourceId": "venison", "abundance": 1 }
+    ]
+  }
 ]
 ```
+
+**Natural resources** — A place may list any number of natural resources. Each entry references a resource catalog id and an abundance from 0 (none) to 3 (abundant). When abundance is omitted in static content, it defaults to 1.
 
 **Character starting positions** — Each character seed specifies an initial place id that must reference a defined place.
 
@@ -78,7 +88,7 @@ At game start, regions and places are loaded from static content and each charac
 The simulation holds:
 
 - A collection of regions (id, name)
-- A collection of places (id, name, region id)
+- A collection of places (id, name, region id, natural resources)
 - Each character's current place id
 
 Regional membership is determined solely by `place.regionId`. Characters do not store a separate region id.
@@ -162,7 +172,7 @@ When a new place is created at runtime:
 
 **Independent of:**
 
-- Time advancement, narration, turn budget, and resource stock.
+- Time advancement, narration, turn budget, and domain resource stock (natural resources describe what exists at a place; stock is the pooled domain total).
 
 | Player intent              | Action cost (Actions) | Places operation        |
 | -------------------------- | --------------------- | ----------------------- |

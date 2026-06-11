@@ -25,6 +25,10 @@ export function initializeGame(): void {
     id: seed.id,
     name: seed.name,
     regionId: seed.regionId,
+    naturalResources: (seed.naturalResources ?? []).map((resource) => ({
+      resourceId: resource.resourceId,
+      abundance: resource.abundance ?? 1,
+    })),
   }))
 
   gameState.characters = characterSeeds.map((seed) => ({
