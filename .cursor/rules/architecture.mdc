@@ -5,43 +5,43 @@ alwaysApply: true
 
 # Architecture Rules
 
-## Layers (all under `src/`)
+Browser-only turn-based sim. All app code under `src/`; `docs/` and `.cursor/` stay at repo root.
 
-| Layer    | Path              | Responsibility                          |
-|----------|-------------------|-----------------------------------------|
-| Types    | `src/types/`      | Interfaces only, no logic               |
-| Data     | `src/data/`       | Immutable JSON content                  |
-| State    | `src/state/`      | Reactive `GameState` singleton          |
-| Engine   | `src/engine/`     | All GameState mutations                 |
-| Services | `src/services/`   | External I/O (LLM, database, …)         |
-| UI       | `src/ui/`         | Rendering and input                     |
+## Layers
+
+| Layer    | Path            | Responsibility                         |
+|----------|-----------------|----------------------------------------|
+| Types    | `src/types/`    | Interfaces only, no logic              |
+| Data     | `src/data/`     | Immutable JSON content                 |
+| State    | `src/state/`    | Reactive `GameState` singleton         |
+| Engine   | `src/engine/`   | All GameState mutations                |
+| Services | `src/services/` | External I/O (LLM, database, …)        |
+| UI       | `src/ui/`       | Rendering and input                    |
 
 ## Hard Rules
 
 1. Vue components **never** mutate `GameState` directly
-2. UI calls Engine through `src/engine/index.ts` exports
-3. UI reads GameState via `useGameState()` from `@state/useGameState`
-4. Pinia stores hold **UI state only** (selection, layout, modals)
-5. Static content stays in `src/data/*.json` — never copy wholesale into GameState
-6. Services wrap external APIs; they do **not** mutate `GameState` — Engine calls services and applies results
-7. Secrets live in root `.env` (gitignored); use `VITE_`-prefixed vars for client-side config (e.g. `VITE_MISTRAL_API_KEY`)
+2. UI calls Engine through `src/engine/index.ts`; reads via `useGameState()` from `@state/useGameState`
+3. Pinia stores hold **UI state only** (selection, layout, modals)
+4. Static content stays in `src/data/*.json` — never copy wholesale into GameState
+5. Services wrap external APIs; they do **not** mutate `GameState` — Engine applies results
+6. Secrets in root `.env` (gitignored); client config uses `VITE_` prefix (e.g. `VITE_MISTRAL_API_KEY`)
 
-## Engine Organization
+## Engine
 
-Group by domain: `src/engine/time/`, `src/engine/characters/`, etc.
-
-Prefer pure functions:
+Group by domain: `src/engine/time/`, `src/engine/characters/`, etc. Prefer pure functions:
 
 ```typescript
-// ✅ Engine mutates via function
 export function advanceTurn(state: GameState): void {
   state.date = nextDate(state.date)
 }
-
-// ❌ UI mutates directly
-gameState.date.turn += 1
 ```
 
-## Adding Features
+## Data Flow
 
-Types → JSON content → Engine module → (optional) Service → `src/engine/index.ts` export → UI wiring
+Player input → UI calls `engineAction()` → Engine mutates `gameState` → Vue reactivity updates UI.
+Services (e.g. LLM) are called from Engine; Engine writes results to state.
+
+## Path Aliases
+
+`@engine/*`, `@state/*`, `@ui/*`, `@data/*`, `@/types`, `@/services/*`

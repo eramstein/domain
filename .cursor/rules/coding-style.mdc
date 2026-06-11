@@ -6,40 +6,26 @@ alwaysApply: false
 
 # Coding Style
 
-## Vue Components
+## Vue
 
-- Always use `<script setup lang="ts">`
-- No Options API
-- Props and emits must be typed
-- Keep components presentational; call Engine for mutations
-
-```vue
-<script setup lang="ts">
-import { engineAdvanceTurn } from '@engine/index'
-import { useGameState } from '@state/useGameState'
-
-const gameState = useGameState()
-
-function handleAdvance(): void {
-  engineAdvanceTurn()
-}
-</script>
-```
+- `<script setup lang="ts">` everywhere; no Options API
+- Typed props and emits
+- Presentational components — call Engine for mutations, read state via `useGameState()`
 
 ## TypeScript
 
-- TypeScript everywhere; no `.js` source files
-- Use `interface` for object shapes, `type` for unions/aliases
-- Avoid classes unless wrapping a third-party library
-- Prefer named exports over default exports (except Vue SFCs)
+- TypeScript only; no `.js` source files
+- `interface` for object shapes; `type` for unions/aliases
+- Avoid classes unless wrapping third-party libs
+- Prefer named exports (Vue SFCs may use default)
 
 ## Imports
 
-Use path aliases: `@engine/`, `@state/`, `@ui/`, `@data/`, `@/types`
+Path aliases: `@engine/*`, `@state/*`, `@ui/*`, `@data/*`, `@/types`, `@/services/*`
 
 ## Naming
 
-- Engine actions: `engineAdvanceTurn`, `engineSpawnCharacter` (exported from `src/engine/index.ts`)
+- Engine exports: `engineAdvanceTurn`, `engineSpawnCharacter` (from `src/engine/index.ts`)
 - Engine internals: `advanceTurn`, `spawnFromTemplate` (domain verbs)
 - Pinia stores: `useUiStore`, `use<Name>Store`
 - Types: PascalCase nouns (`GameState`, `ItemDefinition`)
@@ -47,5 +33,5 @@ Use path aliases: `@engine/`, `@state/`, `@ui/`, `@data/`, `@/types`
 ## Files
 
 - One primary export per Engine module
-- Colocate component styles with `<style scoped>`
-- JSON content uses kebab-case filenames
+- `<style scoped>` with components
+- JSON filenames: kebab-case
