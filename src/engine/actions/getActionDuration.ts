@@ -27,5 +27,9 @@ export function getActionDuration(
     return currentRegion.id === targetPlace.regionId ? 'short' : 'long'
   }
 
+  if (resolved.actionId === 'collect-resource') {
+    return 'long'
+  }
+
   return undefined
 }

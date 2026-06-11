@@ -98,6 +98,15 @@ Each entry carries: id, name, type, subtype, and amount (non-negative integer).
 
 Example: the domain gains 5 wood from gathering. First-time stock for a seeded resource with zero initial amount.
 
+**Collect resource at place** — Add stock for a resource using the abundance listed on a place's natural resources.
+
+- No-op if the place does not exist
+- No-op if the place has no matching natural resource entry, or abundance is zero or negative
+- Otherwise add the abundance amount to stock
+- Does not check character location, advance time, write narration, or check turn budget
+
+Example: collecting oak timber at the Forest Clearing (abundance 3) adds 3 oak timber to domain stock.
+
 **Subtract stock** — Decrease stock for a resource.
 
 - No-op if the quantity to subtract is zero or negative
@@ -143,7 +152,7 @@ Example: spend 10 wood on construction.
 
 **Consumed by:**
 
-- **Actions** — Dispatches gather, trade, and build actions to stock mutations after budget validation.
+- **Actions** — Dispatches collect-resource (and future trade and build) actions to stock mutations after budget validation.
 - **UI** — Displays resource types, subtypes, and stock levels.
 - **Future: Building** — Subtracts construction materials when a structure is placed.
 - **Future: Crafting** — Subtracts inputs and adds outputs through stock operations.
@@ -159,7 +168,7 @@ Example: spend 10 wood on construction.
 
 | Player intent        | Typical action cost (Actions) | Resources operation |
 | -------------------- | ----------------------------- | ------------------- |
-| Gather wood          | Long                          | Add stock           |
+| Collect resource     | Long                          | Add stock (place abundance) |
 | Trade away resources | Short                         | Subtract / add stock on both sides (future trade system) |
 | Build using stock    | Long                          | Subtract stock (future building handler) |
 

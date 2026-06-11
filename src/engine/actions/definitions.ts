@@ -13,10 +13,14 @@ export function getActionDefinition(
 
 export function resolveEnumValues(
   state: GameState,
-  enumSource: 'places' | 'characters',
+  enumSource: 'places' | 'characters' | 'resources',
 ): string[] {
   if (enumSource === 'places') {
     return state.places.map((place) => place.id)
+  }
+
+  if (enumSource === 'resources') {
+    return state.resources.map((resource) => resource.id)
   }
 
   return state.characters.map((character) => character.id)

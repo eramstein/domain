@@ -1,6 +1,7 @@
 import type { GameState, ResolvedAction } from '@/types'
 
 import { getPlaceById } from '../places/lookups'
+import { getResourceById } from '../resources/lookups'
 import { getActionDefinition, resolveEnumValues } from './definitions'
 
 export function isValidResolvedAction(
@@ -28,6 +29,23 @@ export function isValidResolvedAction(
     const placeId = resolved.parameters.placeId
     if (typeof placeId !== 'string') return false
     if (!getPlaceById(state, placeId)) return false
+  }
+
+  if (resolved.actionId === 'collect-resource') {
+    const placeId = resolved.parameters.placeId
+    const resourceId = resolved.parameters.resourceId
+    if (typeof placeId !== 'string' || typeof resourceId !== 'string') {
+      return false
+    }
+
+    const place = getPlaceById(state, placeId)
+    if (!place) return false
+    if (!getResourceById(state, resourceId)) return false
+
+    const naturalResource = place.naturalResources.find(
+      (entry) => entry.resourceId === resourceId,
+    )
+    if (!naturalResource || naturalResource.abundance <= 0) return false
   }
 
   return true

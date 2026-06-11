@@ -1,6 +1,7 @@
 import type { ActionDuration, GameState, ResolvedAction } from '@/types'
 
 import { getPlaceById } from '../places/lookups'
+import { getResourceById } from '../resources/lookups'
 
 export function formatActionNarration(
   state: GameState,
@@ -27,6 +28,24 @@ export function formatActionNarration(
     return duration === 'long'
       ? `${character.name} travels to the ${place.name}.`
       : `${character.name} goes to the ${place.name}.`
+  }
+
+  if (resolved.actionId === 'collect-resource') {
+    const placeId = resolved.parameters.placeId
+    const resourceId = resolved.parameters.resourceId
+    if (typeof placeId !== 'string' || typeof resourceId !== 'string') {
+      return undefined
+    }
+
+    const place = getPlaceById(state, placeId)
+    const resource = getResourceById(state, resourceId)
+    if (!place || !resource) return undefined
+
+    if (character.isPlayer) {
+      return `You collect ${resource.name.toLowerCase()} in the ${place.name}.`
+    }
+
+    return `${character.name} collects ${resource.name.toLowerCase()} in the ${place.name}.`
   }
 
   return undefined

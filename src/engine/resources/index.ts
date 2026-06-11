@@ -4,6 +4,7 @@ export {
   getResourcesBySubtype,
   getResourceAmount,
 } from './lookups'
+export { collectResource } from './collectResource'
 export {
   hasResourceStock,
   addResourceStock,

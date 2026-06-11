@@ -111,6 +111,7 @@ Example: "I go to the forest clearing" → go-to-place action with destination f
 
 - Return nothing if the action id is unknown or parameters are invalid
 - For go-to-place: compare the character's current region (derived from their place via Places) to the destination place's region. Same region → short; different region → long
+- For collect-resource: always long
 - Other actions declare whether they are long or short as part of their definition
 
 **Check if action can execute** — Evaluate turn budget and validity without mutating state.
@@ -151,6 +152,35 @@ For **go to place**:
 Compare the character's current region (derived from their place via the Places system) to the destination place's region before moving.
 
 Other actions declare whether they are long or short as part of their definition.
+
+For **collect resource**:
+
+- **Long** — always.
+
+Example — collect resource:
+
+```json
+{
+  "id": "collect-resource",
+  "name": "Collect resource",
+  "description": "Gather a natural resource from a place and add it to the domain stock.",
+  "parameters": [
+    {
+      "name": "placeId",
+      "type": "string",
+      "description": "The id of the place where the resource is gathered.",
+      "enumSource": "places"
+    },
+    {
+      "name": "resourceId",
+      "type": "string",
+      "description": "The id of the resource to collect.",
+      "enumSource": "resources"
+    }
+  ],
+  "handler": "resources.collect"
+}
+```
 
 ### Turn budget
 
@@ -203,13 +233,15 @@ Movement actions call into the Places system. Both within-region and cross-regio
 
 Individual actions do not advance time. The player performs multiple actions, ends their turn, NPCs act, then time advances one period and turn budgets reset.
 
-### Resources integration (when implemented)
+### Resources integration
 
 | Player intent        | Typical action cost | Handler system |
 | -------------------- | ------------------- | -------------- |
-| Gather wood          | Long                | Resources      |
+| Collect resource     | Long                | Resources      |
 | Trade away resources | Short               | Resources (future trade) |
 | Build using stock    | Long                | Resources (future building) |
+
+Collect resource adds the place's natural-resource abundance to domain stock. The character's current place is not checked.
 
 ---
 

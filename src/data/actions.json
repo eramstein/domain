@@ -12,5 +12,25 @@
       }
     ],
     "handler": "places.goTo"
+  },
+  {
+    "id": "collect-resource",
+    "name": "Collect resource",
+    "description": "Gather a natural resource from a place and add it to the domain stock.",
+    "parameters": [
+      {
+        "name": "placeId",
+        "type": "string",
+        "description": "The id of the place where the resource is gathered.",
+        "enumSource": "places"
+      },
+      {
+        "name": "resourceId",
+        "type": "string",
+        "description": "The id of the resource to collect.",
+        "enumSource": "resources"
+      }
+    ],
+    "handler": "resources.collect"
   }
 ]

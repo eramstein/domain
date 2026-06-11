@@ -67,7 +67,7 @@ export interface ActionParameterSeed {
   name: string
   type: 'string' | 'number' | 'boolean'
   description: string
-  enumSource?: 'places' | 'characters'
+  enumSource?: 'places' | 'characters' | 'resources'
 }
 
 /** Static action definition loaded from JSON. */
