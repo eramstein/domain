@@ -7,9 +7,9 @@ Resources are domain-wide stockpiles used to build structures, craft items, and 
 The Resources system is responsible for:
 
 - Representing resource types, subtypes, and specific resource definitions
-- Tracking per-resource stock quantities in `GameState`
+- Tracking per-resource stock quantities
 - Adding and subtracting stock (creating a stock entry when one does not yet exist)
-- Looking up resources and stock levels for other systems (UI, Actions, future building/crafting)
+- Looking up resources and stock levels for other systems
 
 The Resources system does not:
 
@@ -19,47 +19,25 @@ The Resources system does not:
 - Emit narration when stock changes
 - Own building, crafting, or consumption recipes (future systems call into Resources for stock mutations)
 
-Those concerns belong to separate systems that may call into Resources.
-
 ---
 
-# Terminology
+## Behavior
 
-## Resource type
+### Concepts
 
-A top-level category used by engine logic. Examples: construction material, food, valuable.
+**Resource type** — A top-level category used by game rules. Examples: construction material, food, valuable. Types are a fixed set defined by the game.
 
-Types are fixed enums in code. Other systems use them for rules (for example, a character might refuse food of a given subtype).
+**Resource subtype** — A mid-level category within a type. Examples: wood and stone under construction material; meat under food. Subtypes are a fixed set defined by the game.
 
-## Resource subtype
+**Resource** — A specific, data-driven entry in the resource catalog. Examples: ebony wood, sandstone, salted pork. Each resource has a stable id, display name, type, and subtype. Catalog fields come from static content; only quantity changes during play.
 
-A mid-level category within a type. Examples: wood and stone under construction material; meat under food.
+**Stock** — The current quantity of a resource held by the domain. Stock is keyed by resource id. There is no per-place or per-character stock — one pooled total per resource id.
 
-Subtypes are fixed enums in code, same role as types but more specific.
+**Stock entry** — A runtime record pairing a resource id with its current quantity. Catalog metadata (name, type, subtype) is available on each entry so lookups do not require a separate catalog pass during play.
 
-## Resource
+### Configuration
 
-A specific, data-driven entry in the resource catalog. Examples: ebony wood, sandstone, salted pork.
-
-Each resource has a stable string `id`, display `name`, `type`, and `subtype`. Catalog fields come from static JSON; only `amount` changes during play.
-
-## Stock
-
-The current quantity of a resource held by the domain. Stock is keyed by resource `id`. There is no per-place or per-character stock in this system — one pooled total per resource id.
-
-## Stock entry
-
-A runtime record pairing a resource `id` with its current `amount` in `GameState.resources`. Catalog metadata (`name`, `type`, `subtype`) is copied from seeds at bootstrap so lookups do not require a separate catalog pass during play.
-
----
-
-# Configuration
-
-## Static content
-
-Resource definitions live in immutable JSON under `src/data/`.
-
-**`resources.json`** — resource seeds with starting stock:
+Resource definitions live in static content. Each seed specifies id, name, type, subtype, and initial stock:
 
 ```json
 [
@@ -87,277 +65,115 @@ Resource definitions live in immutable JSON under `src/data/`.
 ]
 ```
 
-Loader types in `src/types/content.ts`:
+At game start, seeds are loaded and each resource's quantity is set from its initial amount.
 
-```ts
-export type ResourceType = 'constructionMaterial' | 'food' | 'valuable'
+### State
 
-export type ResourceSubtype =
-  | 'wood'
-  | 'stone'
-  | 'meat'
-  // extend as new subtypes are needed
+The simulation holds a collection of stock entries. Each known resource id appears at most once. Order is not significant; lookups are by id.
 
-export interface ResourceSeed {
-  id: string
-  name: string
-  type: ResourceType
-  subtype: ResourceSubtype
-  initialAmount: number
-}
-```
+Each entry carries: id, name, type, subtype, and amount (non-negative integer).
 
-Enum values for `ResourceType` and `ResourceSubtype` live in `src/types/` (alongside or inside `content.ts`). JSON seeds must use only defined enum values.
+### Interface
 
-Bootstrap in `src/engine/bootstrap/initializeGame.ts` maps seeds into runtime `GameState` and sets each entry's `amount` from `initialAmount`.
+**Look up resource by id** — Return the stock entry for the given resource id, or nothing if no entry exists.
 
-### Scaffold note
+**List resources by type** — Return all stock entries matching the given resource type.
 
-The vertical slice currently seeds a minimal `Resource` (`id`, `name`, `amount` only). `type` and `subtype` are the next extension before recipe or diet rules depend on them.
+**List resources by subtype** — Return all stock entries matching the given resource subtype.
 
----
+**Get stock amount** — Return the current quantity for a resource id. Return 0 if no entry exists.
 
-# State
+**Check sufficient stock** — Return whether the domain holds at least the requested quantity, without mutating state.
 
-## Types
+- Return false if the requested quantity is zero or negative
+- Return false if no entry exists for the resource id
+- Return true if current stock is greater than or equal to the requested quantity
 
-```ts
-export interface Resource {
-  id: string
-  name: string
-  type: ResourceType
-  subtype: ResourceSubtype
-  amount: number
-}
-```
+**Add stock** — Increase stock for a resource.
 
-## State location
+- No-op if the quantity to add is zero or negative
+- If an entry exists, increase its amount
+- If no entry exists, create one using catalog metadata and set amount to the added value. No-op if the resource id is unknown to the catalog
+- Does not advance time, write narration, or check turn budget
 
-Resources state is stored inside the global `GameState`:
+Example: the domain gains 5 wood from gathering. First-time stock for a seeded resource with zero initial amount.
 
-```ts
-interface GameState {
-  resources: Resource[]
-  // ...
-}
-```
+**Subtract stock** — Decrease stock for a resource.
 
-`GameState.resources` is an array of stock entries. Each known resource id appears at most once. Order is not significant; lookups are by `id`.
+- No-op if the quantity to subtract is zero or negative
+- No-op if no entry exists for the resource id
+- No-op if current stock is less than the requested quantity (insufficient stock)
+- Otherwise decrease the entry's amount
+- Does not advance time, write narration, or check turn budget
+
+Example: spend 10 wood on construction.
+
+### Type and subtype in rules
+
+- Game rules reference type or subtype, not display names. Example: a diet rule checks subtype meat, not the display name "Salted Pork".
+- Multiple specific resources may share a subtype (ebony wood and pine wood both subtype wood).
 
 ---
 
-# Rules
+## Rules
 
-## Catalog
+### Catalog
 
-- Every resource `id` must be unique within `resources.json`.
-- Every seed `type` and `subtype` must match a defined enum value.
-- Resource ids must remain stable strings (used in JSON content, action parameters, and save data).
+- Every resource id must be unique within the resource catalog.
+- Every seed type and subtype must match a defined type or subtype value.
+- Resource ids must remain stable strings (used in content, action parameters, and save data).
 
-## Stock
+### Stock
 
 - Stock is domain-wide. The player owns the pool; NPC actions that spend or add resources mutate the same totals.
 - Physical location is not modeled. "30 wood" means the domain has 30 wood available, not that wood sits in a specific place.
-- `amount` is a non-negative number. Subtraction that would go below zero is rejected (no state change).
-- When adding stock for a resource id that is not yet in `GameState.resources`, append a new entry. The entry must be creatable from catalog data (seed lookup or explicit catalog fields passed to the engine). Ad-hoc ids with no catalog definition are not supported unless a future system registers them first.
+- Amount is a non-negative number. Subtraction that would go below zero is rejected (no state change).
+- When adding stock for a resource id that is not yet in state, append a new entry creatable from catalog data. Ad-hoc ids with no catalog definition are not supported unless a future system registers them first.
 
-## Type and subtype in engine logic
+### Constraints
 
-- Rules reference `type` or `subtype`, not display names. Example: a diet rule checks `subtype === 'meat'`, not `name === 'Salted Pork'`.
-- Multiple specific resources may share a subtype (ebony wood and pine wood both `subtype: 'wood'`).
-
----
-
-# Engine API
-
-Engine modules live in `src/engine/resources/`. Public wrappers are exported from `src/engine/index.ts` using the `engine*` prefix (for example `engineAddResourceStock`).
-
-Internal functions receive `GameState` as the first argument. UI and other systems call only the `engine*` exports.
-
-### Scaffold note
-
-Lookup and stock mutation functions are specified here but not yet implemented. Bootstrap seeding from `resources.json` is in place.
-
-## getResourceById(state, resourceId)
-
-Lookup a stock entry by resource id.
-
-Signature:
-
-```ts
-getResourceById(state: GameState, resourceId: string): Resource | undefined
-```
-
-## getResourcesByType(state, type)
-
-Return all stock entries matching a resource type.
-
-Signature:
-
-```ts
-getResourcesByType(state: GameState, type: ResourceType): Resource[]
-```
-
-## getResourcesBySubtype(state, subtype)
-
-Return all stock entries matching a resource subtype.
-
-Signature:
-
-```ts
-getResourcesBySubtype(state: GameState, subtype: ResourceSubtype): Resource[]
-```
-
-## getResourceAmount(state, resourceId)
-
-Return the current stock amount for a resource, or `0` if no entry exists.
-
-Signature:
-
-```ts
-getResourceAmount(state: GameState, resourceId: string): number
-```
-
-## hasResourceStock(state, resourceId, amount)
-
-Check whether stock is sufficient without mutating state.
-
-Signature:
-
-```ts
-hasResourceStock(
-  state: GameState,
-  resourceId: string,
-  amount: number,
-): boolean
-```
-
-Behavior:
-
-- Return `false` if `amount` is negative or zero.
-- Return `true` if the current stock for `resourceId` is greater than or equal to `amount`.
-- Return `false` if no entry exists for `resourceId`.
-
-## addResourceStock(state, resourceId, amount)
-
-Increase stock for a resource.
-
-Signature:
-
-```ts
-addResourceStock(
-  state: GameState,
-  resourceId: string,
-  amount: number,
-): void
-```
-
-Behavior:
-
-- No-op if `amount` is zero or negative.
-- If an entry for `resourceId` exists, increase `amount`.
-- If no entry exists, create one using catalog metadata from seeds and set `amount` to the added value. No-op if `resourceId` is unknown to the catalog.
-
-Does not:
-
-- Advance time
-- Write narration
-- Check turn budget
-
-Example:
-
-```ts
-// Domain gains 5 wood from gathering
-addResourceStock(state, 'wood', 5)
-
-// First-time stock for a seeded resource with zero initial amount
-addResourceStock(state, 'sandstone', 12)
-```
-
-## subtractResourceStock(state, resourceId, amount)
-
-Decrease stock for a resource.
-
-Signature:
-
-```ts
-subtractResourceStock(
-  state: GameState,
-  resourceId: string,
-  amount: number,
-): void
-```
-
-Behavior:
-
-- No-op if `amount` is zero or negative.
-- No-op if no entry exists for `resourceId`.
-- No-op if current stock is less than `amount` (insufficient stock).
-- Otherwise decrease `amount` on the entry.
-
-Does not:
-
-- Advance time
-- Write narration
-- Check turn budget
-
-Example:
-
-```ts
-// Spend 10 wood on construction
-subtractResourceStock(state, 'wood', 10)
-```
-
----
-
-# Constraints
-
-- Resource `id` values must remain stable strings (used in JSON content and save data).
-- Stock amounts must not go negative; `subtractResourceStock` rejects insufficient stock.
-- Only `src/engine/` modules may mutate resources state; UI calls `engineAddResourceStock` and related exports.
+- Stock amounts must not go negative.
+- Only the engine may mutate resources state; the UI reads state and requests changes through engine operations.
 - Stock mutations must be deterministic — no randomness.
-- `type` and `subtype` on runtime `Resource` entries must match the catalog seed for that `id`.
+- Type and subtype on runtime entries must match the catalog seed for that id.
 
 ---
 
-# Implementation
+## Dependencies
 
-## Module layout
+**Consumed by:**
 
-| Concern        | Path                              |
-| -------------- | --------------------------------- |
-| Runtime types  | `src/types/gameState.ts`          |
-| Enum types     | `src/types/content.ts`            |
-| Content seeds  | `src/types/content.ts` (`ResourceSeed`) |
-| Static JSON    | `src/data/resources.json`         |
-| Engine logic   | `src/engine/resources/`           |
-| Public API     | `src/engine/index.ts`             |
-| Bootstrap      | `src/engine/bootstrap/initializeGame.ts` |
+- **Actions** — Dispatches gather, trade, and build actions to stock mutations after budget validation.
+- **UI** — Displays resource types, subtypes, and stock levels.
+- **Future: Building** — Subtracts construction materials when a structure is placed.
+- **Future: Crafting** — Subtracts inputs and adds outputs through stock operations.
+- **Future: Characters / needs** — Consumption rules filter by type or subtype before subtracting food stock.
 
-## Suggested implementation order
+**Depends on:**
 
-1. Extend types (`ResourceType`, `ResourceSubtype`, `Resource.type`, `Resource.subtype`, update `ResourceSeed`)
-2. Add or update `resources.json` with type and subtype on each entry
-3. Update `initializeGame` to copy `type` and `subtype` from seeds
-4. Implement lookup helpers and stock functions in `src/engine/resources/`
-5. Export `engineGetResourceById`, `engineAddResourceStock`, `engineSubtractResourceStock`, etc. from `src/engine/index.ts`
-6. Wire UI to display type, subtype, and stock (State Explorer already lists resources)
-7. Add Actions handler for collect/gather that calls `addResourceStock` (see roadmap)
+- Static content for resource catalog and initial stock amounts.
 
-## Relation to Actions system
+**Independent of:**
 
-Gathering and spending resources are turn actions. The Actions system resolves free-text input, enforces long vs short budget, then dispatches to Resources engine functions.
+- Turn budget, time advancement, narration, and physical place inventory.
 
-| Player intent        | Typical action cost | Engine call                                      |
-| -------------------- | ------------------- | ------------------------------------------------ |
-| Gather wood          | Long                | `addResourceStock(state, 'wood', quantity)`    |
-| Trade away resources | Short               | `subtractResourceStock` / `addResourceStock` on both sides (future trade system) |
-| Build using stock    | Long                | `subtractResourceStock` via future building handler |
+| Player intent        | Typical action cost (Actions) | Resources operation |
+| -------------------- | ----------------------------- | ------------------- |
+| Gather wood          | Long                          | Add stock           |
+| Trade away resources | Short                         | Subtract / add stock on both sides (future trade system) |
+| Build using stock    | Long                          | Subtract stock (future building handler) |
 
 Resources does not check turn budget. Actions validates budget before calling stock mutations.
 
-## Relation to future systems
+---
 
-- **Building** — subtracts construction materials via `subtractResourceStock` when a structure is placed.
-- **Crafting** — subtracts inputs and adds outputs through stock functions.
-- **Characters / needs** — consumption rules filter by `type` or `subtype` before subtracting food stock.
+## Acceptance criteria
+
+- At game start, all seeded resources are present with quantities matching their initial amounts.
+- Looking up a resource by id returns the correct entry including type, subtype, and amount.
+- Listing by type or subtype returns all and only matching entries.
+- Getting amount for an unknown resource id returns 0.
+- Adding stock increases the entry; adding to an unknown catalog id produces no change.
+- Subtracting stock decreases the entry when sufficient; insufficient stock, unknown id, or non-positive quantity produces no change.
+- Stock never goes negative.
+- Type and subtype on runtime entries match their catalog definitions.

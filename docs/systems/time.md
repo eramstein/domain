@@ -2,134 +2,60 @@
 
 ## Purpose
 
-The Time System tracks the progression of time within the simulation.
+The Time system tracks the progression of time within the simulation.
 
-Time is turn-based. Each turn represents a period of the day.
+Time is turn-based. Each turn represents one period of the day. The system provides a consistent temporal reference for all other systems and a human-readable calendar date for display.
 
-The Time System is responsible for:
+The Time system is responsible for:
 
-- Tracking the current day and period
-- Advancing time
-- Converting simulation time into human-readable strings
-- Providing a consistent temporal reference for all game systems
+- Tracking the current simulation day and period
+- Advancing time by one period when a turn completes
+- Converting simulation day into a calendar date string for display
 
-The Time System does not:
+The Time system does not:
 
 - Trigger gameplay events automatically
 - Schedule character actions
 - Manage seasons or weather
-
-Those concerns belong to separate systems that may depend on Time.
-
----
-
-# Terminology
-
-## Day
-
-A sequential simulation day starting at Day 1.
-
-Day 1 corresponds to the configured simulation start date.
-
-## Period
-
-A subdivision of a day.
-
-Supported periods:
-
-- Morning
-- Afternoon
-- Evening
-- Night
-
-The order is fixed:
-
-Morning → Afternoon → Evening → Night → Morning (next day)
-
-## Turn
-
-A single advancement of time.
-
-Calling `passTurn()` advances the simulation by one period.
+- Reset per-character turn budgets (see Actions system — triggered when time advances)
 
 ---
 
-# Configuration
+## Behavior
 
-## Time Configuration
+### Concepts
 
-The game configuration must specify a simulation start date.
+**Day** — A sequential simulation day starting at Day 1. Day 1 corresponds to the configured simulation start date.
 
-Example:
+**Period** — A subdivision of a day. Supported periods, in fixed order:
 
-```ts
-{
-  startDate: '1404-01-01'
-}
+Morning → Afternoon → Evening → Night → (next day) Morning
 
-```
+**Turn** — One advancement of time. Advancing a turn moves the simulation forward by exactly one period.
 
-The game always begins on:
+### Configuration
 
-```ts
-{
-  day: 1,
-  period: 'Morning'
-}
+The game configuration must specify a simulation start date (for example, `1404-01-01`).
 
-```
+A new game always begins at Day 1, Morning.
 
----
+### State
 
-# State
+The simulation holds:
 
-## GameTime
+- **day** — integer, minimum 1
+- **period** — one of Morning, Afternoon, Evening, Night
 
-```ts
-export type TimePeriod =
-  | 'Morning'
-  | 'Afternoon'
-  | 'Evening'
-  | 'Night';
+### Day progression
 
-export interface GameTime {
-  day: number;
-  period: TimePeriod;
-}
+| Current period | Next period              |
+| -------------- | ------------------------ |
+| Morning        | Afternoon                |
+| Afternoon      | Evening                  |
+| Evening        | Night                    |
+| Night          | Morning (day increments) |
 
-```
-
-## State Location
-
-The Time System state is stored inside the global GameState.
-
-Example:
-
-```ts
-interface GameState {
-  time: GameTime;
-}
-
-```
-
----
-
-# Rules
-
-## Day Progression
-
-Time advances according to the following sequence:
-
-
-| Current   | Next                    |
-| --------- | ----------------------- |
-| Morning   | Afternoon               |
-| Afternoon | Evening                 |
-| Evening   | Night                   |
-| Night     | Morning + increment day |
-
-
-Example:
+Example sequence:
 
 ```text
 Day 1 Morning
@@ -137,101 +63,59 @@ Day 1 Morning
 → Day 1 Evening
 → Day 1 Night
 → Day 2 Morning
-
 ```
 
----
+### Interface
 
-# Engine API
+**Advance turn** — Move the simulation forward by one period. When the current period is Night, set period to Morning and increment day by 1.
 
-## passTurn()
+**Get calendar date string** — Return a human-readable representation of the current simulation date:
 
-Advances the simulation by one period.
+- Derived from the configured start date and current simulation day
+- Includes weekday, month name, day number, and year
+- Does not include the current period (period display is handled separately by the UI)
 
-Signature:
-
-```ts
-passTurn(): void
-
-```
-
-Behavior:
-
-- Advances to the next period
-- If current period is Night:
-  - set period to Morning
-  - increment day by 1
-
-Example:
-
-```ts
-{
-  day: 3,
-  period: 'Night'
-}
-
-```
-
-becomes:
-
-```ts
-{
-  day: 4,
-  period: 'Morning'
-}
-
-```
-
----
-
-## getTimeString()
-
-Returns a human-readable representation of the current simulation date.
-
-Signature:
-
-```ts
-getTimeString(): string
-
-```
-
-Behavior:
-
-- Uses configured start date
-- Converts current simulation day into a calendar date
-- Includes weekday
-- Includes month name
-- Includes day number
-- Includes year
-
-Examples:
+Example outputs for consecutive days:
 
 ```text
 Monday, Jan 1, 1404
-
-```
-
-```text
 Tuesday, Jan 2, 1404
-
-```
-
-```text
 Wednesday, Jan 3, 1404
-
 ```
-
-Period is not included in the formatted string.
-
-Period display is handled separately by the UI.
 
 ---
 
-# Constraints
+## Rules
 
 - Time must always contain a valid period.
 - Day must always be greater than or equal to 1.
-- The order of periods must remain fixed.
-- Time calculations must be deterministic.
-- No randomness may be introduced by the Time System.
+- The order of periods is fixed and must not change.
+- Time calculations must be deterministic — no randomness.
 
+---
+
+## Dependencies
+
+**Consumed by:**
+
+- **Actions** — Turn completion advances time and triggers turn-budget reset for all characters.
+- **UI** — Displays the calendar date string and current period.
+
+**Depends on:**
+
+- Game configuration providing a simulation start date.
+
+**Independent of:**
+
+- Character actions, places, resources, and narration.
+
+---
+
+## Acceptance criteria
+
+- A new game starts at Day 1, Morning.
+- Advancing from Night increments the day and sets period to Morning.
+- Advancing through a full day cycle (Morning → Afternoon → Evening → Night → Morning) increments the day exactly once.
+- The calendar date string reflects the configured start date offset by the current simulation day.
+- The calendar date string does not include the period.
+- Time state is always valid (day ≥ 1, period is one of the four defined values).

@@ -1,13 +1,5 @@
 # Game Design
 
-Project name: Domain
-
-## High Level Concept
-
-Domain is a hybrid management and role playing game, based in a historical european medieval setting. The player receives a ruined castle and some lands to manage. Some NPCs join the player over time. The player can give them orders but they have their own needs and motivations.
-
-The game doesn't have a goal, it is more akin a colony simulator and story generator like Dwarf Fortress or Rimworld. It doesn't simulate the world in a detailed manner, but focuses more on deep character simulation and narrative progression.
-
 ## RPG / Narrative systems
 
 The RPG / narrative part of the game feels like a **“You Are the Hero”** book that writes itself on the fly. It is mostly text based with some decorative images like character portraits. Events occur and present the players with a few predefined choices, or a free text answer, and the game simulates the outcome using AI generated text.

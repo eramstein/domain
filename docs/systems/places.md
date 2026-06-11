@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The Places system handles spatial positions in the game world. Characters (and, when the inventory system exists, items) have a current position and can move.
+The Places system handles spatial positions in the game world. Characters (and, when the inventory system exists, items) have a current position and can move between places.
 
 Geography is board-game level: two tiers only — **region** and **place**. There are no coordinates, distances, or pathfinding. It is narrative geography, not a spatial simulation.
 
@@ -11,90 +11,54 @@ The Places system is responsible for:
 - Representing regions and places in runtime state
 - Tracking which place each character occupies
 - Moving characters between places
-- Looking up places and regions for other systems (UI, Actions)
+- Looking up places, regions, and co-located characters for other systems
 
 The Places system does not:
 
 - Compute routes or travel time
 - Advance time (see Time system)
-- Decide whether a move is allowed as a turn action (see Actions system)
+- Decide whether a move is allowed as a turn action or enforce turn budget (see Actions system)
 - Emit narration or events when someone moves
 - Manage visibility or fog of war
 
-Those concerns belong to separate systems that may call into Places.
-
 ---
 
-# Terminology
+## Behavior
 
-## Region
+### Concepts
 
-A high-level geographic zone. Examples: a castle, a forest, a village.
+**Region** — A high-level geographic zone (for example, a castle, a forest, a village). Regions are containers identified by stable string ids. A region has one or more places.
 
-Regions are containers. A region has one or more places. Regions are identified by stable string `id` values.
+**Place** — A specific location within a region (for example, the kitchen inside the castle, a clearing inside the forest). Every place belongs to exactly one region. Characters are always positioned at the **place** level, not the region level.
 
-## Place
+**Position** — A character's position is a place id. The character's region is always derived from that place's parent region — it is never stored separately on the character.
 
-A specific location within a region. Examples: the kitchen inside the castle, a clearing inside the forest.
+**Dynamic creation** — Regions and places defined in static content are seeded at game start. Additional places may be created at runtime (for example, when the player builds a new structure). Runtime-created places follow the same shape as seeded ones.
 
-Every place belongs to exactly one region via `regionId`. Characters are always positioned at the **place** level, not the region level. The region is derived from the place's parent.
+### Configuration
 
-## Position
+Static content defines:
 
-A character's position is a `placeId` referencing a `Place` in `GameState.places`. The character's region is always `place.regionId` — it is never stored separately on the character.
-
-Items will use the same model (`placeId`) when the inventory system is implemented.
-
-## Dynamic creation
-
-Regions and places defined in static JSON are seeded at game start. Additional places may be created at runtime (for example, when the player builds a new structure). Runtime-created places follow the same `Place` shape as seeded ones.
-
----
-
-# Configuration
-
-## Static content
-
-Region and place definitions live in immutable JSON under `src/data/`.
-
-**`regions.json`** — region seeds:
+**Regions** — Each region has a stable id and display name.
 
 ```json
 [
-  {
-    "id": "castle",
-    "name": "Ashwick Keep"
-  },
-  {
-    "id": "forest",
-    "name": "Whisperwood"
-  }
+  { "id": "castle", "name": "Ashwick Keep" },
+  { "id": "forest", "name": "Whisperwood" }
 ]
 ```
 
-**`places.json`** — place seeds (each references a region):
+**Places** — Each place has a stable id, display name, and parent region id.
 
 ```json
 [
-  {
-    "id": "castle-great-hall",
-    "name": "Great Hall",
-    "regionId": "castle"
-  },
-  {
-    "id": "castle-kitchen",
-    "name": "Kitchen",
-    "regionId": "castle"
-  },
-  {
-    "id": "forest-clearing",
-    "name": "Forest Clearing",
-    "regionId": "forest"
-  }
+  { "id": "castle-great-hall", "name": "Great Hall", "regionId": "castle" },
+  { "id": "castle-kitchen", "name": "Kitchen", "regionId": "castle" },
+  { "id": "forest-clearing", "name": "Forest Clearing", "regionId": "forest" }
 ]
 ```
 
-**`characters.json`** — starting position per character seed:
+**Character starting positions** — Each character seed specifies an initial place id that must reference a defined place.
 
 ```json
 [
@@ -107,252 +71,113 @@ Region and place definitions live in immutable JSON under `src/data/`.
 ]
 ```
 
-Loader types in `src/types/content.ts`:
+At game start, regions and places are loaded from static content and each character's position is set from their initial place id.
 
-```ts
-export interface RegionSeed {
-  id: string
-  name: string
-}
+### State
 
-export interface PlaceSeed {
-  id: string
-  name: string
-  regionId: string
-}
-```
+The simulation holds:
 
-`CharacterSeed` gains `initialPlaceId: string` (must reference a place in `places.json`).
+- A collection of regions (id, name)
+- A collection of places (id, name, region id)
+- Each character's current place id
 
-Bootstrap in `src/engine/bootstrap/initializeGame.ts` maps seeds into runtime `GameState` and sets each character's `placeId` from `initialPlaceId`.
+Regional membership is determined solely by `place.regionId`. Characters do not store a separate region id.
 
----
+### Interface
 
-# State
+**Look up place by id** — Return the place with the given id, or nothing if it does not exist.
 
-## Types
+**Look up region by id** — Return the region with the given id, or nothing if it does not exist.
 
-```ts
-export interface Region {
-  id: string
-  name: string
-}
+**Get region for place** — Resolve place id → place → parent region. Return nothing if the place or its region does not exist.
 
-export interface Place {
-  id: string
-  name: string
-  regionId: string
-}
-```
+**List places in region** — Return all places whose parent region matches the given region id.
 
-`Character` includes position:
+**List characters at place** — Return all characters whose current place id matches the given place id.
 
-```ts
-export interface Character {
-  id: string
-  name: string
-  isPlayer: boolean
-  placeId: string
-}
-```
+**Move character to place** — Set the character's place id to the target place.
 
-## State location
+- No-op if the character does not exist
+- No-op if the target place does not exist
+- Does not advance time, check turn budget, or produce narration
 
-Places state is stored inside the global `GameState`:
+Example: a character in the Great Hall moves to the Kitchen (same region). A character in the Great Hall moves to the Forest Clearing (different region). Both use the same move operation; the Actions system classifies cost before calling.
 
-```ts
-interface GameState {
-  regions: Region[]
-  places: Place[]
-  characters: Character[]
-  // ...
-}
-```
+**Create place at runtime** — Add a new place to the simulation.
 
-`regionId` on `Place` is the single source of truth for regional membership. Characters do not store `regionId`.
+- No-op if a place with the same id already exists
+- No-op if the place's region id does not reference an existing region
+- Otherwise append the new place
+
+Deferred until the building system exists; documented here for completeness.
 
 ---
 
-# Rules
+## Rules
 
-## Hierarchy
+### Hierarchy
 
-- Every `Place` must reference an existing `Region` via `regionId`.
+- Every place must reference an existing region.
 - A region may contain any number of places (including one).
-- Place and region `id` values must be unique within their respective arrays.
+- Place and region ids must be unique within their respective collections.
 
-## Position
+### Position
 
-- Every character must have a `placeId` that references an existing place.
-- To determine a character's region, resolve `character.placeId` → `place.regionId`.
+- Every character must have a place id that references an existing place.
+- To determine a character's region, resolve their place id to the place, then read its region id.
 
-## Movement
+### Movement
 
-- `goTo` sets `character.placeId` to the target place.
+- Moving sets the character's place id to the target place.
 - Moving between places in the **same** region is a **short** action (see Actions system).
 - Moving to a place in a **different** region is a **long** action (see Actions system).
-- Places does not enforce long vs short rules — the Actions system validates turn budget before calling `goTo`.
+- Places does not enforce long vs short rules — the Actions system validates turn budget before invoking movement.
 
-## Runtime place creation
+### Runtime place creation
 
-When a new place is created at runtime (future building system):
+When a new place is created at runtime:
 
-- Append a new `Place` to `gameState.places`.
-- The `regionId` must reference an existing region.
-- The new `id` must not collide with an existing place.
+- The region id must reference an existing region.
+- The new id must not collide with an existing place.
 
----
+### Constraints
 
-# Engine API
-
-Engine modules live in `src/engine/places/`. Public wrappers are exported from `src/engine/index.ts` using the `engine*` prefix (for example `engineGoTo`).
-
-Internal functions receive `GameState` as the first argument. UI and other systems call only the `engine*` exports.
-
-## getPlaceById(state, placeId)
-
-Lookup a place by id.
-
-Signature:
-
-```ts
-getPlaceById(state: GameState, placeId: string): Place | undefined
-```
-
-## getRegionById(state, regionId)
-
-Lookup a region by id.
-
-Signature:
-
-```ts
-getRegionById(state: GameState, regionId: string): Region | undefined
-```
-
-## getRegionForPlace(state, placeId)
-
-Return the region that contains the given place.
-
-Signature:
-
-```ts
-getRegionForPlace(state: GameState, placeId: string): Region | undefined
-```
-
-Behavior:
-
-- Resolve `placeId` → `Place` → `place.regionId` → `Region`
-- Return `undefined` if the place or region does not exist
-
-## getPlacesInRegion(state, regionId)
-
-Return all places in a region.
-
-Signature:
-
-```ts
-getPlacesInRegion(state: GameState, regionId: string): Place[]
-```
-
-## getCharactersAtPlace(state, placeId)
-
-Return all characters currently at a place.
-
-Signature:
-
-```ts
-getCharactersAtPlace(state: GameState, placeId: string): Character[]
-```
-
-## goTo(state, characterId, placeId)
-
-Move a character to a new place.
-
-Signature:
-
-```ts
-goTo(state: GameState, characterId: string, placeId: string): void
-```
-
-Behavior:
-
-- Find the character by `characterId`; no-op if not found
-- Find the target place by `placeId`; no-op if not found
-- Set `character.placeId` to `placeId`
-
-Does not:
-
-- Advance time
-- Check long vs short action rules
-- Write narration
-
-Example:
-
-```ts
-// Character in Great Hall moves to Kitchen (same region — short action)
-goTo(state, 'player', 'castle-kitchen')
-
-// Character moves to Forest Clearing (different region — long action)
-goTo(state, 'player', 'forest-clearing')
-```
-
-## createPlace(state, place)
-
-Add a new place at runtime. Deferred until the building system exists; documented here for completeness.
-
-Signature:
-
-```ts
-createPlace(state: GameState, place: Place): void
-```
-
-Behavior:
-
-- No-op if `place.id` already exists
-- No-op if `place.regionId` does not reference an existing region
-- Otherwise append `place` to `state.places`
+- Region and place ids must remain stable strings (used in content and save data).
+- Movement must be deterministic — no randomness.
+- Only the engine may mutate places state; the UI reads state and requests changes through engine operations.
 
 ---
 
-# Constraints
+## Dependencies
 
-- Every character `placeId` must reference a place that exists in `state.places`.
-- Every place `regionId` must reference a region that exists in `state.regions`.
-- Region and place ids must remain stable strings (used in JSON content and save data).
-- `goTo` must be deterministic — no randomness.
-- Only `src/engine/` modules may mutate places state; UI calls `engineGoTo` and related exports.
+**Consumed by:**
+
+- **Actions** — Classifies movement as long or short by comparing regions; dispatches movement after budget validation.
+- **UI** — Displays region, place, and character location.
+
+**Depends on:**
+
+- Static content for region and place definitions and character starting positions.
+- Characters system for character records and their place ids.
+
+**Independent of:**
+
+- Time advancement, narration, turn budget, and resource stock.
+
+| Player intent              | Action cost (Actions) | Places operation        |
+| -------------------------- | --------------------- | ----------------------- |
+| Move within same region    | Short                 | Move character to place |
+| Move to a different region | Long                  | Move character to place |
 
 ---
 
-# Implementation
+## Acceptance criteria
 
-## Module layout
-
-| Concern        | Path                              |
-| -------------- | --------------------------------- |
-| Runtime types  | `src/types/gameState.ts`          |
-| Content seeds  | `src/types/content.ts`            |
-| Static JSON    | `src/data/regions.json`, `places.json` |
-| Engine logic   | `src/engine/places/`              |
-| Public API     | `src/engine/index.ts`             |
-| Bootstrap      | `src/engine/bootstrap/initializeGame.ts` |
-
-## Suggested implementation order
-
-1. Extend types (`Region`, `Place.regionId`, `Character.placeId`, seed types)
-2. Add or update JSON content and loader exports
-3. Update `initializeGame` to seed regions, places, and starting positions
-4. Implement lookup helpers and `goTo` in `src/engine/places/`
-5. Export `engineGoTo`, `engineGetPlaceById`, etc. from `src/engine/index.ts`
-6. Wire UI to display region, place, and character location
-
-## Relation to Actions system
-
-The Actions system resolves free-text player input into typed actions, then calls Places engine functions:
-
-| Player intent              | Action cost | Engine call                                      |
-| -------------------------- | ----------- | ------------------------------------------------ |
-| Move within same region    | Short       | `goTo(state, characterId, placeId)`            |
-| Move to a different region | Long        | `goTo(state, characterId, placeId)`            |
-
-Both paths use the same `goTo` function. The Actions layer enforces long vs short rules before calling it.
+- At game start, all seeded regions and places are present and every character is at their initial place.
+- Every character's place id references an existing place.
+- Every place's region id references an existing region.
+- Looking up a character's region via their place returns the correct parent region.
+- Moving a character to a valid place updates their position; invalid character or place ids produce no change.
+- Listing characters at a place returns all and only characters currently there.
+- Creating a runtime place succeeds when the region exists and the id is unique; duplicate or invalid region ids produce no change.
+- Places does not check or modify turn budget when moving a character.
