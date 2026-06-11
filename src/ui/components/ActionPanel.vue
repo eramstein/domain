@@ -1,32 +1,22 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 
-import {
-  engineExecuteAction,
-  engineFindActionsInText,
-} from '@engine/index'
-import { useGameState } from '@state/useGameState'
+import { engineFindActionsInText } from '@engine/index'
 
-const gameState = useGameState()
+import { usePlayerActions } from '../composables/usePlayerActions'
 
 const actionText = ref('')
-const feedback = ref<string | null>(null)
 const isResolving = ref(false)
 
-const player = computed(() =>
-  gameState.characters.find((character) => character.isPlayer),
-)
-
-const longActionUsed = computed(
-  () => player.value?.turnBudget.longActionUsed ?? false,
-)
+const { player, longActionUsed, feedback, executeResolvedAction, clearFeedback } =
+  usePlayerActions()
 
 async function submitAction(): Promise<void> {
   const text = actionText.value.trim()
   if (!text || !player.value || isResolving.value) return
 
   isResolving.value = true
-  feedback.value = null
+  clearFeedback()
 
   try {
     const resolved = await engineFindActionsInText(player.value.id, text)
@@ -36,11 +26,7 @@ async function submitAction(): Promise<void> {
     }
 
     for (const action of resolved) {
-      const result = engineExecuteAction(player.value.id, action)
-
-      if (!result.success) {
-        feedback.value =
-          result.message ?? "You can't do that right now."
+      if (!executeResolvedAction(action)) {
         return
       }
     }

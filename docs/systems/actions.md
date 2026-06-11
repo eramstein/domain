@@ -91,8 +91,8 @@ Each character carries a turn budget indicating whether the long-action slot has
 ### Turn flow (player)
 
 1. After the previous turn's outcomes are shown, the game prompts the player in free text (RPG dungeon-master style: "What do you do?").
-2. The player responds in free text (for example, "I go to the forest clearing").
-3. The Actions system resolves the text into zero or more resolved actions via the LLM.
+2. The player responds in free text (for example, "I go to the forest clearing"), or uses UI shortcuts: click a place name to go there, or click a natural resource to collect it.
+3. The Actions system resolves the text into zero or more resolved actions via the LLM. Shortcuts bypass the LLM and supply a resolved action directly.
 4. For each resolved action, the system validates parameters, checks turn budget, checks action requirements, classifies long vs short, executes via the handler, and reports the outcome to the player. Failed requirements cancel the action and show a specific message to the player.
 5. The player may perform more actions until they end the turn.
 6. When the player ends their turn, NPCs perform actions using the same rules, driven by their goals and motivations (see Characters system).
@@ -274,6 +274,7 @@ Collect resource adds the place's natural-resource abundance to domain stock aft
 ## Acceptance criteria
 
 - Free-text input can be resolved into zero or more valid resolved actions via the LLM.
+- UI shortcuts can trigger go-to-place and collect-resource without LLM resolution.
 - Parsing does not mutate game state or turn budget.
 - A character can execute any number of short actions per turn.
 - A character can execute at most one long action per turn; further long actions are rejected with no state change.

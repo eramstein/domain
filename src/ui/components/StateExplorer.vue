@@ -11,6 +11,8 @@ import type {
   ResourceType,
 } from '@/types'
 
+import { usePlayerActions } from '../composables/usePlayerActions'
+
 const props = defineProps<{
   time: GameTime
   timeString: string
@@ -19,6 +21,10 @@ const props = defineProps<{
   places: readonly Place[]
   resources: readonly Resource[]
 }>()
+
+const { player, executeResolvedAction } = usePlayerActions()
+
+const playerPlaceId = computed(() => player.value?.placeId)
 
 const placeById = computed(() => {
   const map = new Map<string, Place>()
@@ -79,6 +85,17 @@ const resourceSubtypeLabels: Record<ResourceSubtype, string> = {
 function resourceCategory(resource: Resource): string {
   return `${resourceTypeLabels[resource.type]} · ${resourceSubtypeLabels[resource.subtype]}`
 }
+
+function goToPlace(placeId: string): void {
+  executeResolvedAction({ actionId: 'goto', parameters: { placeId } })
+}
+
+function collectResource(placeId: string, resourceId: string): void {
+  executeResolvedAction({
+    actionId: 'collect-resource',
+    parameters: { placeId, resourceId },
+  })
+}
 </script>
 
 <template>
@@ -123,8 +140,20 @@ function resourceCategory(resource: Resource): string {
         >
           <span class="region-name">{{ region.name }}</span>
           <ul class="place-list">
-            <li v-for="place in regionPlaces" :key="place.id" class="place-item">
-              <span class="place-name">{{ place.name }}</span>
+            <li
+              v-for="place in regionPlaces"
+              :key="place.id"
+              class="place-item"
+              :class="{ current: place.id === playerPlaceId }"
+            >
+              <button
+                type="button"
+                class="place-link"
+                :disabled="!player"
+                @click="goToPlace(place.id)"
+              >
+                {{ place.name }}
+              </button>
               <ul
                 v-if="place.naturalResources.length > 0"
                 class="natural-resource-list"
@@ -133,7 +162,16 @@ function resourceCategory(resource: Resource): string {
                   v-for="naturalResource in place.naturalResources"
                   :key="naturalResource.resourceId"
                 >
-                  <span>{{ resourceName(naturalResource.resourceId) }}</span>
+                  <button
+                    type="button"
+                    class="resource-link"
+                    :disabled="!player"
+                    @click="
+                      collectResource(place.id, naturalResource.resourceId)
+                    "
+                  >
+                    {{ resourceName(naturalResource.resourceId) }}
+                  </button>
                   <span class="abundance">{{ naturalResource.abundance }}</span>
                 </li>
               </ul>
@@ -284,6 +322,35 @@ li {
   padding: 0.2rem 0 0.2rem 0.75rem;
   font-size: 0.9rem;
   color: var(--text-muted);
+}
+
+.place-item.current .place-link {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.place-link,
+.resource-link {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.place-link:hover:not(:disabled),
+.resource-link:hover:not(:disabled) {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+.place-link:disabled,
+.resource-link:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .place-name {
