@@ -1,24 +1,31 @@
-import type { GameState, ResolvedAction } from '@/types'
+import type { ActionExecutionResult, GameState, ResolvedAction } from '@/types'
 
 import { appendNarration } from '../narration/appendNarration'
-import { canExecuteAction } from './canExecuteAction'
 import { dispatchAction } from './dispatch'
 import { getActionDefinition } from './definitions'
 import { formatActionNarration } from './formatActionNarration'
 import { getActionDuration } from './getActionDuration'
+import { getActionFailureMessage } from './getActionFailureMessage'
 
 export function executeAction(
   state: GameState,
   characterId: string,
   resolved: ResolvedAction,
-): boolean {
-  if (!canExecuteAction(state, characterId, resolved)) return false
+): ActionExecutionResult {
+  const failureMessage = getActionFailureMessage(state, characterId, resolved)
+  if (failureMessage) {
+    return { success: false, message: failureMessage }
+  }
 
   const definition = getActionDefinition(resolved.actionId)
-  if (!definition) return false
+  if (!definition) {
+    return { success: false, message: "You can't do that right now." }
+  }
 
   const duration = getActionDuration(state, characterId, resolved)
-  if (!duration) return false
+  if (!duration) {
+    return { success: false, message: "You can't do that right now." }
+  }
 
   const dispatched = dispatchAction(
     state,
@@ -26,7 +33,9 @@ export function executeAction(
     definition.handler,
     resolved.parameters,
   )
-  if (!dispatched) return false
+  if (!dispatched) {
+    return { success: false, message: "You can't do that right now." }
+  }
   if (duration === 'long') {
     const character = state.characters.find((entry) => entry.id === characterId)
     if (character) {
@@ -44,5 +53,5 @@ export function executeAction(
     appendNarration(state, narration)
   }
 
-  return true
+  return { success: true }
 }

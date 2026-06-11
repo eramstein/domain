@@ -10,7 +10,12 @@ export type {
   TimePeriod,
 } from './gameState'
 
-export type { TurnBudget, ResolvedAction, ActionDuration } from './actions'
+export type {
+  TurnBudget,
+  ResolvedAction,
+  ActionDuration,
+  ActionExecutionResult,
+} from './actions'
 
 export type { GameConfig } from './config'
 export { INITIAL_GAME_TIME } from './time'

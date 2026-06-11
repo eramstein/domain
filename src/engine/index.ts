@@ -159,7 +159,7 @@ export function engineCanExecuteAction(
 export function engineExecuteAction(
   characterId: string,
   resolved: ResolvedAction,
-): boolean {
+) {
   return executeAction(gameState, characterId, resolved)
 }
 

@@ -10,3 +10,9 @@ export interface ResolvedAction {
 }
 
 export type ActionDuration = 'short' | 'long'
+
+/** Outcome of attempting to execute a resolved action. */
+export interface ActionExecutionResult {
+  success: boolean
+  message?: string
+}

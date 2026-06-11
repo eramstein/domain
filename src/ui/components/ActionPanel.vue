@@ -4,7 +4,6 @@ import { computed, ref } from 'vue'
 import {
   engineExecuteAction,
   engineFindActionsInText,
-  engineGetActionDuration,
 } from '@engine/index'
 import { useGameState } from '@state/useGameState'
 
@@ -37,15 +36,11 @@ async function submitAction(): Promise<void> {
     }
 
     for (const action of resolved) {
-      const duration = engineGetActionDuration(player.value.id, action)
-      const executed = engineExecuteAction(player.value.id, action)
+      const result = engineExecuteAction(player.value.id, action)
 
-      if (!executed) {
-        if (duration === 'long' && longActionUsed.value) {
-          feedback.value = 'You already used your long action this turn.'
-        } else {
-          feedback.value = "You can't do that right now."
-        }
+      if (!result.success) {
+        feedback.value =
+          result.message ?? "You can't do that right now."
         return
       }
     }

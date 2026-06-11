@@ -38,14 +38,8 @@ export function isValidResolvedAction(
       return false
     }
 
-    const place = getPlaceById(state, placeId)
-    if (!place) return false
+    if (!getPlaceById(state, placeId)) return false
     if (!getResourceById(state, resourceId)) return false
-
-    const naturalResource = place.naturalResources.find(
-      (entry) => entry.resourceId === resourceId,
-    )
-    if (!naturalResource || naturalResource.abundance <= 0) return false
   }
 
   return true

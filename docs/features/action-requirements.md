@@ -1,10 +1,9 @@
-Update the actions system so that actions can have requirements based
+Update the actions system so that actions can have requirements to be checked before they are executed.
 
-Need first to:
+A requirement is a test on the game state, for a given character executing the action.
+Examples of requirements:
 
-- actions system:
-  - requirements for actions (e.g. be at target place)
-  - if requirements not met, remember target action, find first step action to fullfill these requirements, and do that first action. Then next turn, re-ietrate if target action still not doable. Ability to cancel target action.
+- when asking for action "collect resource" with parameters resource id 'oak-wood' and place 'forest-clearing', we need to check 2 things: is there an 'oak-wood' resource in place 'forest-clearing', and is the character performing the action at the correct place.
+- if the requested action is 'build stone wall', that action might require 20 resources of type 'contruction material' and subtype 'stone' in the stock. (note that action type doesn't exist yet, it's just an example)
 
-- objective system (later)
-  - objectives <> to action. Based on desired game state. e.g. : acquire item, reach stock level N, get relationship level X with character Y...
+If the requirements are not met, inform the player and cancel the action.

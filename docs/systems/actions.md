@@ -50,6 +50,8 @@ A character may perform **any number** of short actions per turn. Once a long ac
 
 **Turn budget** — Per-character, per-turn state tracking whether the long-action slot has been used. The Actions system checks the budget before executing an action and updates it after a successful long action.
 
+**Requirement** — A test on game state that must pass for a given character to execute an action. Requirements are checked after parameter validation and turn-budget checks. When a requirement fails, the action is cancelled and the player is told why (for example, wrong location or missing resource at a place). Each action type defines its own requirements.
+
 ### Configuration
 
 Actions are defined as static content and loaded at game start. Each entry describes one action the LLM can match against free-text input.
@@ -91,7 +93,7 @@ Each character carries a turn budget indicating whether the long-action slot has
 1. After the previous turn's outcomes are shown, the game prompts the player in free text (RPG dungeon-master style: "What do you do?").
 2. The player responds in free text (for example, "I go to the forest clearing").
 3. The Actions system resolves the text into zero or more resolved actions via the LLM.
-4. For each resolved action, the system validates turn budget, classifies long vs short, executes via the handler, and reports the outcome to the player.
+4. For each resolved action, the system validates parameters, checks turn budget, checks action requirements, classifies long vs short, executes via the handler, and reports the outcome to the player. Failed requirements cancel the action and show a specific message to the player.
 5. The player may perform more actions until they end the turn.
 6. When the player ends their turn, NPCs perform actions using the same rules, driven by their goals and motivations (see Characters system).
 7. Time advances to the next period (see Time system). All turn budgets reset.
@@ -114,19 +116,25 @@ Example: "I go to the forest clearing" → go-to-place action with destination f
 - For collect-resource: always long
 - Other actions declare whether they are long or short as part of their definition
 
-**Check if action can execute** — Evaluate turn budget and validity without mutating state.
+**Check action requirements** — Evaluate action-specific state conditions for the acting character without mutating state.
 
-- Classify duration for the resolved action
+- Return nothing if all requirements pass
+- Return a player-facing message if a requirement fails (for example, character not at the target place, or no gatherable resource at that place)
+- Requirements are defined per action type; only collect-resource is implemented so far
+
+**Check if action can execute** — Evaluate validity, turn budget, and requirements without mutating state.
+
+- Validate parameters and classify duration for the resolved action
 - If duration is long and the long-action slot is already used, return false
-- If the action or parameters are invalid, return false
+- If the action, parameters, or requirements are invalid, return false
 - Otherwise return true
 
 **Execute action** — Validate, dispatch, and update turn budget.
 
-- No-op if the action cannot execute
-- Invoke the handler with the acting character and validated parameters. Domain logic lives in the target system; Actions orchestrates and enforces budget rules
+- No state change if the action cannot execute; return a failure result with a player-facing message when requirements or budget block execution
+- Invoke the handler with the acting character and validated parameters. Domain logic lives in the target system; Actions orchestrates and enforces budget and requirement rules
 - On success, if duration is long, mark the long-action slot as used
-- Does not call the LLM, advance time, or write narration
+- Does not call the LLM or advance time
 
 Example: moving within the same region is short. Moving to a different region is long and consumes the long-action slot.
 
@@ -182,6 +190,19 @@ Example — collect resource:
 }
 ```
 
+### Requirements
+
+Requirements are checked after parameter validation and before dispatch. Failed requirements produce no state change and return a specific message to the player.
+
+Example for **collect resource**:
+
+- The character must be at the target **placeId**.
+- The place must list the target **resourceId** in its natural resources with abundance greater than zero.
+
+Example failure messages: "You need to be at the Forest Clearing to collect oak wood there." or "There is no oak wood to collect at the Forest Clearing."
+
+Future actions (for example, build using stock) will add their own requirement checks (such as sufficient stock of a given type and subtype).
+
 ### Turn budget
 
 - Before executing, if the action is **long** and the character's long-action slot is already used, reject the action (no state change).
@@ -193,7 +214,8 @@ Example — collect resource:
 
 - Look up the action definition by action id.
 - Validate parameters (required fields, allowed values when enumSource is set).
-- Invoke the handler with the acting character and validated parameters. Domain logic lives in the target system; Actions orchestrates and enforces budget rules.
+- Check action requirements for the acting character.
+- Invoke the handler with the acting character and validated parameters. Domain logic lives in the target system; Actions orchestrates and enforces budget and requirement rules.
 
 ### Constraints
 
@@ -224,10 +246,12 @@ Example — collect resource:
 
 Movement actions call into the Places system. Both within-region and cross-region moves use the same movement operation. Actions enforces long vs short rules before calling it; Places does not check turn budget.
 
+
 | Player intent              | Action cost | Handler system |
 | -------------------------- | ----------- | -------------- |
 | Move within same region    | Short       | Places         |
 | Move to a different region | Long        | Places         |
+
 
 ### Time integration
 
@@ -235,13 +259,15 @@ Individual actions do not advance time. The player performs multiple actions, en
 
 ### Resources integration
 
-| Player intent        | Typical action cost | Handler system |
-| -------------------- | ------------------- | -------------- |
-| Collect resource     | Long                | Resources      |
-| Trade away resources | Short               | Resources (future trade) |
+
+| Player intent        | Typical action cost | Handler system              |
+| -------------------- | ------------------- | --------------------------- |
+| Collect resource     | Long                | Resources                   |
+| Trade away resources | Short               | Resources (future trade)    |
 | Build using stock    | Long                | Resources (future building) |
 
-Collect resource adds the place's natural-resource abundance to domain stock. The character's current place is not checked.
+
+Collect resource adds the place's natural-resource abundance to domain stock after Actions verifies the character is at the target place and the resource is present with abundance greater than zero.
 
 ---
 
@@ -254,7 +280,9 @@ Collect resource adds the place's natural-resource abundance to domain stock. Th
 - Go-to-place within the same region is classified as short; cross-region is classified as long.
 - Executing a valid action invokes the correct handler in the target system.
 - Executing a long action marks the long-action slot as used; short actions do not.
-- Invalid action ids, invalid parameters, or exhausted long-action budget produce no state change.
+- Invalid action ids, invalid parameters, unmet requirements, or exhausted long-action budget produce no state change.
+- Unmet requirements return a specific player-facing message explaining why the action was cancelled.
 - When time advances to a new period, all characters' turn budgets reset.
 - NPCs follow the same resolution, budget, and dispatch rules as the player.
 - Action execution is deterministic given the same state and resolved action.
+
