@@ -11,6 +11,12 @@ import {
 } from './actions'
 import { initializeGame } from './bootstrap/initializeGame'
 import {
+  bootstrapGame,
+  loadGame,
+  QUICKSAVE_NAME,
+  saveGame,
+} from './persistence'
+import {
   createPlace,
   getCharactersAtPlace,
   getPlaceById,
@@ -34,6 +40,23 @@ import { getTimeString, passTurn } from './time'
 export function engineInitializeGame(): void {
   initializeGame()
 }
+
+/** Load the latest save on startup, or seed from static content. */
+export function engineBootstrapGame(): Promise<void> {
+  return bootstrapGame()
+}
+
+/** Persist the current simulation under a named save slot. */
+export function engineSaveGame(name: string): Promise<void> {
+  return saveGame(name)
+}
+
+/** Restore simulation state from a named save slot. */
+export function engineLoadGame(name: string): Promise<boolean> {
+  return loadGame(name)
+}
+
+export { QUICKSAVE_NAME }
 
 /** Advance the simulation by one period and reset turn budgets. */
 export function enginePassTurn(): void {

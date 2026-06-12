@@ -21,11 +21,16 @@ function createEmptyGameState(): GameState {
 export const gameState = reactive<GameState>(createEmptyGameState())
 
 export function resetGameState(): void {
-  const empty = createEmptyGameState()
-  gameState.time = empty.time
-  gameState.regions = empty.regions
-  gameState.places = empty.places
-  gameState.characters = empty.characters
-  gameState.resources = empty.resources
-  gameState.narration = empty.narration
+  applyGameState(createEmptyGameState())
+}
+
+/** Replace runtime simulation data (used by Engine when loading saves). */
+export function applyGameState(source: GameState): void {
+  const next = structuredClone(source)
+  gameState.time = next.time
+  gameState.regions = next.regions
+  gameState.places = next.places
+  gameState.characters = next.characters
+  gameState.resources = next.resources
+  gameState.narration = next.narration
 }

@@ -17,6 +17,9 @@ Phased plan for building Domain. Each phase should leave the game in a playable 
 - [x] High level UI structure (narrative section, dashboards section)
 - [x] Display current game state
 - [x] Implement actions system basics
-- [ ] Implement resources system basics
-- [ ] End turn and update game state
-- [ ] Save/Reload state
+- [x] Implement resources system basics
+- [x] End turn and update game state
+- [x] Save/Reload state
+- [ ] Implement NPC system basics
+- [ ] Implement NPC objective system
+- [ ] UI components structure for state explorer with drill downs
