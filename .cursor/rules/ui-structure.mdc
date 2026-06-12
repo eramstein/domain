@@ -1,0 +1,85 @@
+---
+description: UI folder layout, component map, and implementation status for Domain
+globs: "src/ui/**/*"
+alwaysApply: false
+---
+
+# UI Structure
+
+Implementation map for `src/ui/`. Product intent lives in `docs/product/ui-design.md`.
+
+## Folder layout
+
+```
+src/ui/
+├── App.vue                 # Root shell, global shortcuts (save/load)
+├── views/
+│   └── GameView.vue        # Two-column layout (narration + dashboard)
+├── components/
+│   ├── narration/          # NarrationPanel, ActionPanel, QuickActions, EntityPicker
+│   └── dashboard/          # DashboardPanel, widgets, topic views, entity sheets
+├── composables/            # Shared UI logic (player actions, lookups, picker options)
+├── stores/                 # Pinia — UI state only
+└── styles/
+    ├── main.css            # Global tokens and resets
+    └── dashboard.css       # Shared dashboard classes
+```
+
+## Data access
+
+- Read runtime state: `useGameState()` from `@state/useGameState`
+- Read static content / labels: `@data/*` or Engine lookups — do not copy catalogs into Pinia
+- Mutate simulation: `@engine/index` exports only
+- Vue components never mutate `GameState` directly
+
+## Pinia
+
+`src/ui/stores/` holds UI-only state (dashboard navigation, selection, modals). Never duplicate `GameState` or static content.
+
+## Component map
+
+| UI concept | Component |
+|------------|-----------|
+| Two-column shell | `GameView` |
+| Narration log | `NarrationPanel` |
+| Free-text action input | `ActionPanel` |
+| Quick action shortcuts | `QuickActions` |
+| Parameter picker | `EntityPicker` |
+| Dashboard shell + breadcrumbs | `DashboardPanel` |
+| Dashboard navigation store | `useDashboardNavigation` |
+| Home widgets | `TimeWidget`, `ResourcesWidget`, `CharactersWidget`, `PlacesWidget` |
+| Topic views | `ResourcesTopic`, `CharactersTopic`, `PlacesTopic` |
+| Entity sheets | `CharacterSheet`, `PlaceSheet` |
+
+## Composables
+
+| Concern | Composable |
+|---------|------------|
+| Execute player actions + feedback | `usePlayerActions` |
+| Place/region/resource lookups | `useDashboardLookups` |
+| Resource type/subtype labels | `useResourceLabels` |
+| Quick-action picker options | `useActionPickerOptions` |
+
+## Current state
+
+| Area | Status |
+|------|--------|
+| Layout | Two columns in `GameView` |
+| Narration | `NarrationPanel`, `ActionPanel`, `QuickActions`, end turn in `GameView` |
+| Dashboard | `DashboardPanel` with home widgets, topic views, entity sheets |
+| Resource summary | Aggregated on home; full list in `ResourcesTopic` |
+| Navigation | Breadcrumbs + `useDashboardNavigation` |
+| Quick actions | `QuickActions` + `EntityPicker` in `ActionPanel`; driven by `actions.json` |
+| Dashboard shortcuts | Collect on `PlacesTopic` and `PlaceSheet`; go-to on `PlaceSheet` (legacy; prefer quick actions) |
+
+**Deferred:**
+
+- Rich action widgets in the narration column (e.g. trade)
+- Removing dashboard gameplay shortcuts
+
+## Adding UI
+
+- New narration-side action UI → `components/narration/`
+- New dashboard view or widget → `components/dashboard/` (widgets, topics, or sheets)
+- New UI-only state → `stores/`
+- Shared logic used by multiple components → `composables/`

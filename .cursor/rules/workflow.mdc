@@ -13,7 +13,7 @@ Long-running hobby project. Prefer small, complete slices over large refactors.
 
 1. Read the feature document.
 2. Read all referenced system documents in `docs/systems/`.
-3. Read architecture rules.
+3. Read architecture rules (and UI structure rules when changing `src/ui/`).
 4. Create plan.
 5. Implement feature.
 6. Update impacted systems documents.

@@ -53,11 +53,13 @@ The Characters system does not:
 
 **NPC type** — Classification for non-player characters:
 
-| Type | Role |
-| ---- | ---- |
-| `ally` | Joined the domain; subordinate to the player and eventually orderable, but autonomous with their own ambitions |
-| `neutral` | Outside the domain; interactable (for example, merchants) |
-| `enemy` | Hostile; eventually attacks the player and allies (for example, raiders) |
+
+| Type      | Role                                                                                                           |
+| --------- | -------------------------------------------------------------------------------------------------------------- |
+| `ally`    | Joined the domain; subordinate to the player and eventually orderable, but autonomous with their own ambitions |
+| `neutral` | Outside the domain; interactable (for example, merchants)                                                      |
+| `enemy`   | Hostile; eventually attacks the player and allies (for example, raiders)                                       |
+
 
 **Physical description** — Short text paragraph describing appearance. Used for narration and LLM context.
 
@@ -69,20 +71,24 @@ The Characters system does not:
 
 **Attributes** — Simple RPG-style stats on a shared scale:
 
-| Attribute | Meaning |
-| --------- | ------- |
-| `strength` | Physical power |
-| `vitality` | Endurance and resilience |
-| `intelligence` | Reasoning and learning |
+
+| Attribute      | Meaning                  |
+| -------------- | ------------------------ |
+| `strength`     | Physical power           |
+| `vitality`     | Endurance and resilience |
+| `intelligence` | Reasoning and learning   |
+
 
 Values are non-negative integers. The vertical slice stores them; no gameplay rules consume them yet.
 
 **Health** — Simple status for the vertical slice:
 
-| Value | Meaning |
-| ----- | ------- |
-| `healthy` | Normal condition |
-| `sick` | Unwell; future systems may restrict actions or trigger events |
+
+| Value     | Meaning                                                       |
+| --------- | ------------------------------------------------------------- |
+| `healthy` | Normal condition                                              |
+| `sick`    | Unwell; future systems may restrict actions or trigger events |
+
 
 **Turn budget** — Per-character, per-turn flag for whether the long-action slot has been used. Lives on the character record; owned and mutated by the Actions system (see Actions system).
 
@@ -163,20 +169,22 @@ At game start, seeds are loaded and each character's runtime record is created w
 
 The simulation holds a collection of character records. Each record carries:
 
-| Field | Source | Mutable during play |
-| ----- | ------ | ------------------- |
-| `id` | Seed | No |
-| `name` | Seed | No (vertical slice) |
-| `isPlayer` | Seed | No |
-| `npcType` | Seed (NPCs only) | No (vertical slice) |
-| `physicalDescription` | Seed | No (vertical slice) |
-| `portrait` | Seed | No (vertical slice) |
-| `personalityDescription` | Seed | No (vertical slice) |
-| `personalityTraits` | Seed | No (vertical slice) |
-| `attributes` | Seed | No (vertical slice) |
-| `health` | Seed | Yes (future; seeded value only in vertical slice) |
-| `placeId` | Seed → Places | Yes (via Places movement) |
-| `turnBudget` | Initialized at start | Yes (via Actions) |
+
+| Field                    | Source               | Mutable during play                               |
+| ------------------------ | -------------------- | ------------------------------------------------- |
+| `id`                     | Seed                 | No                                                |
+| `name`                   | Seed                 | No (vertical slice)                               |
+| `isPlayer`               | Seed                 | No                                                |
+| `npcType`                | Seed (NPCs only)     | No (vertical slice)                               |
+| `physicalDescription`    | Seed                 | No (vertical slice)                               |
+| `portrait`               | Seed                 | No (vertical slice)                               |
+| `personalityDescription` | Seed                 | No (vertical slice)                               |
+| `personalityTraits`      | Seed                 | No (vertical slice)                               |
+| `attributes`             | Seed                 | No (vertical slice)                               |
+| `health`                 | Seed                 | Yes (future; seeded value only in vertical slice) |
+| `placeId`                | Seed → Places        | Yes (via Places movement)                         |
+| `turnBudget`             | Initialized at start | Yes (via Actions)                                 |
+
 
 Exactly one character must have `isPlayer: true`. NPC records must include `npcType`. The player character does not have `npcType`.
 
@@ -255,11 +263,13 @@ NPCs will eventually use the same action definitions and turn-budget rules as th
 
 - Time advancement, narration content, and domain resource stock.
 
-| Concern | Owner | On character record |
-| ------- | ----- | --------------------- |
-| Current place | Places (movement) | `placeId` |
-| Long-action slot used | Actions (budget rules) | `turnBudget.longActionUsed` |
-| Identity and stats | Characters | id, name, descriptions, traits, attributes, health, npcType |
+
+| Concern               | Owner                  | On character record                                         |
+| --------------------- | ---------------------- | ----------------------------------------------------------- |
+| Current place         | Places (movement)      | `placeId`                                                   |
+| Long-action slot used | Actions (budget rules) | `turnBudget.longActionUsed`                                 |
+| Identity and stats    | Characters             | id, name, descriptions, traits, attributes, health, npcType |
+
 
 ---
 
@@ -283,3 +293,4 @@ NPCs will eventually use the same action definitions and turn-budget rules as th
 - Relationships, goals, and tasks influence NPC choices.
 - Health changes affect available actions or trigger events.
 - LLM uses personality and trait data when reasoning about NPC behavior.
+

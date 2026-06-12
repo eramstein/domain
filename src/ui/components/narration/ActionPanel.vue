@@ -2,8 +2,9 @@
 import { ref } from 'vue'
 
 import { engineFindActionsInText } from '@engine/index'
+import { usePlayerActions } from '@ui/composables/usePlayerActions'
 
-import { usePlayerActions } from '../composables/usePlayerActions'
+import QuickActions from './QuickActions.vue'
 
 const actionText = ref('')
 const isResolving = ref(false)
@@ -60,6 +61,7 @@ async function submitAction(): Promise<void> {
     </form>
     <p v-if="longActionUsed" class="budget-note">Long action used this turn.</p>
     <p v-if="feedback" class="feedback">{{ feedback }}</p>
+    <QuickActions />
   </section>
 </template>
 

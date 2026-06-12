@@ -1,3 +1,4 @@
+import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 
 import { engineBootstrapGame } from '@engine/index'
@@ -7,7 +8,9 @@ import './ui/styles/main.css'
 
 async function startApp(): Promise<void> {
   await engineBootstrapGame()
-  createApp(App).mount('#app')
+  const app = createApp(App)
+  app.use(createPinia())
+  app.mount('#app')
 }
 
 void startApp()

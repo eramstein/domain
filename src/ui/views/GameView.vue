@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-
-import { engineGetTimeString, enginePassTurn } from '@engine/index'
+import { enginePassTurn } from '@engine/index'
 import { useGameState } from '@state/useGameState'
 
-import ActionPanel from '../components/ActionPanel.vue'
-import NarrationPanel from '../components/NarrationPanel.vue'
-import StateExplorer from '../components/StateExplorer.vue'
+import DashboardPanel from '../components/dashboard/DashboardPanel.vue'
+import ActionPanel from '../components/narration/ActionPanel.vue'
+import NarrationPanel from '../components/narration/NarrationPanel.vue'
 
 const gameState = useGameState()
-const timeString = computed(() => engineGetTimeString())
 
 function passTurn(): void {
   enginePassTurn()
@@ -25,14 +22,7 @@ function passTurn(): void {
         End turn
       </button>
     </div>
-    <StateExplorer
-      :time="gameState.time"
-      :time-string="timeString"
-      :characters="gameState.characters"
-      :regions="gameState.regions"
-      :places="gameState.places"
-      :resources="gameState.resources"
-    />
+    <DashboardPanel />
   </div>
 </template>
 
