@@ -1,4 +1,9 @@
 import type { TurnBudget } from './actions'
+import type {
+  CharacterAttributes,
+  CharacterHealth,
+  NpcType,
+} from './characters'
 import type { ResourceSubtype, ResourceType } from './content'
 
 /** A geographic zone containing one or more places. */
@@ -12,6 +17,14 @@ export interface Character {
   id: string
   name: string
   isPlayer: boolean
+  /** Present on NPCs only. */
+  npcType?: NpcType
+  physicalDescription: string
+  portrait: string
+  personalityDescription: string
+  personalityTraits: readonly string[]
+  attributes: CharacterAttributes
+  health: CharacterHealth
   placeId: string
   turnBudget: TurnBudget
 }

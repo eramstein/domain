@@ -5,6 +5,7 @@ import {
   regionSeeds,
   resourceSeeds,
 } from '@data/index'
+import { characterFromSeed } from '@engine/characters'
 import { INITIAL_GAME_TIME } from '@/types/time'
 import { gameState, resetGameState } from '@state/gameState'
 
@@ -31,13 +32,7 @@ export function initializeGame(): void {
     })),
   }))
 
-  gameState.characters = characterSeeds.map((seed) => ({
-    id: seed.id,
-    name: seed.name,
-    isPlayer: seed.isPlayer,
-    placeId: seed.initialPlaceId,
-    turnBudget: { longActionUsed: false },
-  }))
+  gameState.characters = characterSeeds.map(characterFromSeed)
 
   gameState.resources = resourceSeeds.map((seed) => ({
     id: seed.id,

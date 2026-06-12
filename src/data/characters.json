@@ -3,6 +3,33 @@
     "id": "player",
     "name": "Elias Thornwood",
     "isPlayer": true,
-    "initialPlaceId": "castle-great-hall"
+    "initialPlaceId": "castle-great-hall",
+    "physicalDescription": "A lean man in his thirties with weathered hands and an attentive gaze.",
+    "portrait": "/portraits/elias.png",
+    "personalityDescription": "Cautious but fair; prefers to understand a situation before acting.",
+    "personalityTraits": ["cautious", "fair", "observant"],
+    "attributes": {
+      "strength": 2,
+      "vitality": 3,
+      "intelligence": 4
+    },
+    "health": "healthy"
+  },
+  {
+    "id": "mara-blacksmith",
+    "name": "Mara Voss",
+    "isPlayer": false,
+    "npcType": "ally",
+    "initialPlaceId": "castle-great-hall",
+    "physicalDescription": "Broad-shouldered, soot-marked, with a steady, unhurried manner.",
+    "portrait": "/portraits/mara.png",
+    "personalityDescription": "Practical and plain-spoken; loyal once trust is earned.",
+    "personalityTraits": ["practical", "loyal", "blunt"],
+    "attributes": {
+      "strength": 4,
+      "vitality": 3,
+      "intelligence": 2
+    },
+    "health": "healthy"
   }
 ]

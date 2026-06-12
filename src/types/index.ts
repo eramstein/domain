@@ -1,4 +1,10 @@
 export type {
+  NpcType,
+  CharacterHealth,
+  CharacterAttributes,
+} from './characters'
+
+export type {
   Character,
   Region,
   Place,

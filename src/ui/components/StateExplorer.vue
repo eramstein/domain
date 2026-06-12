@@ -115,6 +115,9 @@ function collectResource(placeId: string, resourceId: string): void {
           <span class="character-label">
             <span class="name">{{ character.name }}</span>
             <span v-if="character.isPlayer" class="tag">you</span>
+            <span v-else-if="character.npcType" class="tag">{{
+              character.npcType
+            }}</span>
           </span>
           <span class="meta">
             <span class="location">{{ placeName(character.placeId) }}</span>

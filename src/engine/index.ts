@@ -11,6 +11,13 @@ import {
 } from './actions'
 import { initializeGame } from './bootstrap/initializeGame'
 import {
+  getAllCharacters,
+  getAllies,
+  getCharacterById,
+  getCharactersByNpcType,
+  getPlayerCharacter,
+} from './characters'
+import {
   bootstrapGame,
   loadGame,
   QUICKSAVE_NAME,
@@ -92,6 +99,33 @@ export function engineGetPlacesInRegion(regionId: string) {
 /** Return all characters currently at a place. */
 export function engineGetCharactersAtPlace(placeId: string) {
   return getCharactersAtPlace(gameState, placeId)
+}
+
+/** Look up a character by id. */
+export function engineGetCharacterById(characterId: string) {
+  return getCharacterById(gameState, characterId)
+}
+
+/** Return the player character. */
+export function engineGetPlayerCharacter() {
+  return getPlayerCharacter(gameState)
+}
+
+/** Return every character in the simulation. */
+export function engineGetAllCharacters() {
+  return getAllCharacters(gameState)
+}
+
+/** Return all NPCs with the given type. */
+export function engineGetCharactersByNpcType(
+  npcType: Parameters<typeof getCharactersByNpcType>[1],
+) {
+  return getCharactersByNpcType(gameState, npcType)
+}
+
+/** Return all ally NPCs. */
+export function engineGetAllies() {
+  return getAllies(gameState)
 }
 
 /** Move a character to a new place. */

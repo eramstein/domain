@@ -1,9 +1,23 @@
+import type {
+  CharacterAttributes,
+  CharacterHealth,
+  NpcType,
+} from './characters'
+
 /** Static character seed loaded from JSON. */
 export interface CharacterSeed {
   id: string
   name: string
   isPlayer: boolean
+  /** Required when `isPlayer` is false. */
+  npcType?: NpcType
   initialPlaceId: string
+  physicalDescription: string
+  portrait: string
+  personalityDescription: string
+  personalityTraits: string[]
+  attributes: CharacterAttributes
+  health: CharacterHealth
 }
 
 /** Static region seed loaded from JSON. */
