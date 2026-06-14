@@ -25,7 +25,7 @@ export function checkCollectResourceRequirements(
     if (character.isPlayer) {
       return `You need to be at the ${place.name} to collect ${resource.name.toLowerCase()} there.`
     }
-    return undefined
+    return `${character.name} needs to be at the ${place.name} to collect ${resource.name.toLowerCase()} there.`
   }
 
   const naturalResource = place.naturalResources.find(
@@ -35,7 +35,7 @@ export function checkCollectResourceRequirements(
     if (character.isPlayer) {
       return `There is no ${resource.name.toLowerCase()} to collect at the ${place.name}.`
     }
-    return undefined
+    return `There is no ${resource.name.toLowerCase()} to collect at the ${place.name}.`
   }
 
   return undefined

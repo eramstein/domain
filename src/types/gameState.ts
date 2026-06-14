@@ -1,4 +1,4 @@
-import type { TurnBudget } from './actions'
+import type { ResolvedAction, TurnBudget } from './actions'
 import type {
   CharacterAttributes,
   CharacterHealth,
@@ -27,6 +27,8 @@ export interface Character {
   health: CharacterHealth
   placeId: string
   turnBudget: TurnBudget
+  /** Ally order for the current turn; cleared after NPC acts at turn end. */
+  order: ResolvedAction | null
 }
 
 /** A natural resource occurrence at a place. */

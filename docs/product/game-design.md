@@ -17,13 +17,3 @@ A turn in the simulation consists of a part of a day (e.g. Monday morning). Each
 Once the turn's state has been written, the game asks the player: "what do you do?". And the player answers in free text. A LLM looks for actions and parameters in the player's response, and executes the action. An action can either use up the whole turn, or be a quick action and leave the possibility to do other actions during the turn. The player can do one "full turn" action, and as many other ones as he wants.
 
 Continuing the example, the player might say "I tell John to build some planks with the wood he cut". The simulation will add this into John's task list, and simulate what John decides to do during that turn, an account of which will be written to the player at the beginning of the next turn. This was not a full turn action, so the player gets to make another one and writes "I go see the merchant to trade". This opens a dedicated trade UI component to perform the trade and chat with the merchant (simulated by LLM). Once done, this was a full turn action, so the player can only do quick actions. Once done, he can click next turn, and the simulation loops back to the start turn, writing down what happened.
-
-## User Interface
-
-The UI is plit in 2 main sections. Both are visible side by side.
-
-The first is mostly text based and is the narration written top to bottom as the events occur. This is where the player can act by typing his actions, and interacting with special widgets for some specific action types like trading.
-
-The second is a game state explorer, a view of the simulation state. It looks like a business dashboard: list of characters, places, resources, with the option to click and drill down to details. It presents hard data, but also narrative summaries like character arcs.
-
-Styling should be minimalistic and text based, avoid too many borders and decorations.

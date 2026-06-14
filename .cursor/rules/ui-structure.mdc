@@ -44,7 +44,8 @@ src/ui/
 | Narration log | `NarrationPanel` |
 | Free-text action input | `ActionPanel` |
 | Quick action shortcuts | `QuickActions` |
-| Parameter picker | `EntityPicker` |
+| Action type + parameter picker | `ActionPicker` |
+| Parameter picker list | `EntityPicker` |
 | Dashboard shell + breadcrumbs | `DashboardPanel` |
 | Dashboard navigation store | `useDashboardNavigation` |
 | Home widgets | `TimeWidget`, `ResourcesWidget`, `CharactersWidget`, `PlacesWidget` |
@@ -56,6 +57,7 @@ src/ui/
 | Concern | Composable |
 |---------|------------|
 | Execute player actions + feedback | `usePlayerActions` |
+| Give ally orders + feedback | `useNpcOrders` |
 | Place/region/resource lookups | `useDashboardLookups` |
 | Resource type/subtype labels | `useResourceLabels` |
 | Quick-action picker options | `useActionPickerOptions` |

@@ -15,5 +15,6 @@ export function characterFromSeed(seed: CharacterSeed): Character {
     health: seed.health,
     placeId: seed.initialPlaceId,
     turnBudget: { longActionUsed: false },
+    order: null,
   }
 }

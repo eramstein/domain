@@ -31,16 +31,16 @@ The Characters system does not:
 **Vertical slice (now):**
 
 - Character seeds with id, name, player flag, starting place, descriptions, portrait reference, personality traits, attributes, health, and NPC type
-- Runtime character records including position (`placeId`) and turn budget (initialized at game start; budget rules owned by Actions)
+- Runtime character records including position (`placeId`), turn budget (initialized at game start; budget rules owned by Actions), and pending ally orders (`order`)
 - Lookups: by id, player character, list all, filter by NPC type
+- NPCs execute orders from players, or by default execute collect resource action
 
 **Deferred:**
 
 - Relationships between characters
-- Goals, ambitions, and current tasks
+- Goals, ambitions, and autonomous decisions
 - NPC turn loop and LLM-driven action selection
 - Health transitions (sickness onset, recovery, death)
-- Orders from the player to allies
 - Combat and enemy behavior
 
 ### Concepts
@@ -53,13 +53,11 @@ The Characters system does not:
 
 **NPC type** — Classification for non-player characters:
 
-
 | Type      | Role                                                                                                           |
 | --------- | -------------------------------------------------------------------------------------------------------------- |
 | `ally`    | Joined the domain; subordinate to the player and eventually orderable, but autonomous with their own ambitions |
 | `neutral` | Outside the domain; interactable (for example, merchants)                                                      |
 | `enemy`   | Hostile; eventually attacks the player and allies (for example, raiders)                                       |
-
 
 **Physical description** — Short text paragraph describing appearance. Used for narration and LLM context.
 
@@ -71,24 +69,20 @@ The Characters system does not:
 
 **Attributes** — Simple RPG-style stats on a shared scale:
 
-
 | Attribute      | Meaning                  |
 | -------------- | ------------------------ |
 | `strength`     | Physical power           |
 | `vitality`     | Endurance and resilience |
 | `intelligence` | Reasoning and learning   |
 
-
 Values are non-negative integers. The vertical slice stores them; no gameplay rules consume them yet.
 
 **Health** — Simple status for the vertical slice:
-
 
 | Value     | Meaning                                                       |
 | --------- | ------------------------------------------------------------- |
 | `healthy` | Normal condition                                              |
 | `sick`    | Unwell; future systems may restrict actions or trigger events |
-
 
 **Turn budget** — Per-character, per-turn flag for whether the long-action slot has been used. Lives on the character record; owned and mutated by the Actions system (see Actions system).
 
@@ -169,7 +163,6 @@ At game start, seeds are loaded and each character's runtime record is created w
 
 The simulation holds a collection of character records. Each record carries:
 
-
 | Field                    | Source               | Mutable during play                               |
 | ------------------------ | -------------------- | ------------------------------------------------- |
 | `id`                     | Seed                 | No                                                |
@@ -184,7 +177,7 @@ The simulation holds a collection of character records. Each record carries:
 | `health`                 | Seed                 | Yes (future; seeded value only in vertical slice) |
 | `placeId`                | Seed → Places        | Yes (via Places movement)                         |
 | `turnBudget`             | Initialized at start | Yes (via Actions)                                 |
-
+| `order`                  | Initialized `null`   | Yes (via order assignment; cleared after NPC act) |
 
 Exactly one character must have `isPlayer: true`. NPC records must include `npcType`. The player character does not have `npcType`.
 
@@ -200,11 +193,15 @@ Exactly one character must have `isPlayer: true`. NPC records must include `npcT
 
 **List allies** — Shorthand for NPCs with `npcType: ally`.
 
-Does not move characters, execute actions, reset turn budgets, or call the LLM.
+**Set ally order** — Store a resolved action on an ally's `order` field for execution at turn end. Only allies accept orders; parameters must be valid. Does not execute the action immediately.
 
-### NPC actions (deferred)
+**Execute NPC turns** — When the player ends the turn, each ally executes their stored order if present; otherwise they attempt a default collect-resource action at their current place when a gatherable resource exists. Orders are cleared after the attempt. Action execution uses the Actions system (budget, requirements, dispatch).
 
-NPCs will eventually use the same action definitions and turn-budget rules as the player. The Characters system will supply what each NPC chooses to do each turn (goals, motivations, LLM reasoning); the Actions system resolves and executes those choices. Not part of the vertical slice.
+Does not move characters directly, parse free text, reset turn budgets, or call the LLM.
+
+### NPC actions
+
+NPCs use the same action definitions and turn-budget rules as the player. Ally orders are assigned by the player via the UI; at turn end the engine executes each ally's order or default action through the Actions system.
 
 ---
 
@@ -263,13 +260,11 @@ NPCs will eventually use the same action definitions and turn-budget rules as th
 
 - Time advancement, narration content, and domain resource stock.
 
-
 | Concern               | Owner                  | On character record                                         |
 | --------------------- | ---------------------- | ----------------------------------------------------------- |
 | Current place         | Places (movement)      | `placeId`                                                   |
 | Long-action slot used | Actions (budget rules) | `turnBudget.longActionUsed`                                 |
 | Identity and stats    | Characters             | id, name, descriptions, traits, attributes, health, npcType |
-
 
 ---
 
@@ -285,12 +280,11 @@ NPCs will eventually use the same action definitions and turn-budget rules as th
 - Getting the player character returns the `isPlayer` record.
 - Listing characters by NPC type returns all and only matching NPCs.
 - Attributes are non-negative; health is `healthy` or `sick`.
-- Characters does not move characters, execute actions, or reset turn budgets.
+- Ally orders can be set on allies and are executed at turn end when prerequisites are met; allies without an order attempt default collect-resource at their place.
+- Characters does not move characters directly, parse free text, or reset turn budgets.
 
 **Future (out of scope for vertical slice):**
 
-- NPCs take turns using the same action rules as the player.
-- Relationships, goals, and tasks influence NPC choices.
+- Autonomous NPC decisions driven by goals, motivations, and LLM reasoning.
 - Health changes affect available actions or trigger events.
 - LLM uses personality and trait data when reasoning about NPC behavior.
-

@@ -20,7 +20,10 @@ export function getActionFailureMessage(
   if (!duration) return "You can't do that right now."
 
   if (duration === 'long' && character.turnBudget.longActionUsed) {
-    return 'You already used your long action this turn.'
+    if (character.isPlayer) {
+      return 'You already used your long action this turn.'
+    }
+    return `${character.name} already used their long action this turn.`
   }
 
   return checkActionRequirements(state, characterId, resolved)

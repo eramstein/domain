@@ -18,12 +18,10 @@ Section headings use muted uppercase labels. The narration column uses a serif t
 
 Two main sections, visible side by side on desktop:
 
-
 | Column                              | Role                           | Tone                   |
 | ----------------------------------- | ------------------------------ | ---------------------- |
 | **Narration** (primary, wider)      | Story, player input, turn flow | Book                   |
 | **Dashboard** (secondary, narrower) | Explore simulation state       | Board game / dashboard |
-
 
 On narrow viewports the columns stack: narration first, dashboard below.
 
@@ -89,22 +87,18 @@ Widget order (most important first):
 
 Full lists with more detail than the home widgets:
 
-
-| Topic          | Shows                                               |
-| -------------- | --------------------------------------------------- |
-| **Resources**  | Every stock entry, grouped by type → subtype        |
-| **Characters** | Name, place, health, NPC type                       |
+| Topic          | Shows                                                            |
+| -------------- | ---------------------------------------------------------------- |
+| **Resources**  | Every stock entry, grouped by type → subtype                     |
+| **Characters** | Name, place, health, NPC type                                    |
 | **Places**     | Place image, name, region, natural resources, characters present |
-
 
 #### Entity sheets
 
-
-| Sheet         | Shows                                                                                                                          |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **Character** | All available character details: identity, descriptions, traits, attributes, health, place, turn budget, portrait when present |
-| **Place**     | Place image, name, region, natural resources, characters currently here                                                        |
-
+| Sheet         | Shows                                                                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Character** | All available character details: identity, descriptions, traits, attributes, health, place, turn budget, portrait when present. Ally sheets show **Give order** action buttons below the portrait when no order is set; once set, the pending order and a cancel control replace the picker until cleared. |
+| **Place**     | Place image, name, region, natural resources, characters currently here                                                         |
 
 Sheets are the deepest level; breadcrumbs end at the entity name.
 
@@ -114,9 +108,10 @@ Sheets are the deepest level; breadcrumbs end at the entity name.
 
 **Gameplay from the dashboard** should be the exception. Prefer acting through the narration column (free text, quick actions, or action widgets). Any control that changes the simulation must go through the same rules as player input elsewhere — not by editing state directly in the UI.
 
+**Ally orders** — On ally character sheets, **Give order** buttons (same action picker as narration quick actions) appear below the portrait when no order is pending. A pending order shows with a cancel control and hides the picker until cancelled. Orders execute when the player ends the turn; allies without an order default to collecting a resource at their current place when possible.
+
 ---
 
 ## Related Docs
 
 - [game-design.md](./game-design.md) — Core loop, narration vs simulation, action widgets
-

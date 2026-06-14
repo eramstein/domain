@@ -16,6 +16,9 @@ import {
   getCharacterById,
   getCharactersByNpcType,
   getPlayerCharacter,
+  executeNpcTurns,
+  setNpcOrder,
+  clearNpcOrder,
 } from './characters'
 import {
   bootstrapGame,
@@ -67,6 +70,7 @@ export { QUICKSAVE_NAME }
 
 /** Advance the simulation by one period and reset turn budgets. */
 export function enginePassTurn(): void {
+  executeNpcTurns(gameState)
   passTurn(gameState)
   resetTurnBudgets(gameState)
 }
@@ -131,6 +135,19 @@ export function engineGetCharactersByNpcType(
 /** Return all ally NPCs. */
 export function engineGetAllies() {
   return getAllies(gameState)
+}
+
+/** Store an order for an ally NPC to execute at turn end. */
+export function engineSetNpcOrder(
+  characterId: string,
+  resolved: ResolvedAction,
+) {
+  return setNpcOrder(gameState, characterId, resolved)
+}
+
+/** Clear a pending ally order for the current turn. */
+export function engineClearNpcOrder(characterId: string) {
+  return clearNpcOrder(gameState, characterId)
 }
 
 /** Move a character to a new place. */
