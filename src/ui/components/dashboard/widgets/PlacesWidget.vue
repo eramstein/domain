@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import RegionImage from '../RegionImage.vue'
 import { useDashboardLookups } from '@ui/composables/useDashboardLookups'
 import { useDashboardNavigation } from '@ui/stores/dashboardNavigation'
 
@@ -22,8 +23,9 @@ const { regionsWithPlaces } = useDashboardLookups()
         class="dash-region-group"
       >
         <span class="dash-region-name">{{ region.name }}</span>
+        <RegionImage :region-id="region.id" :alt="region.name" />
         <ul class="dash-list dash-place-list">
-          <li v-for="place in places" :key="place.id" class="dash-place-item">
+          <li v-for="place in places" :key="place.id" class="dash-place-entry">
             <button
               type="button"
               class="dash-link"

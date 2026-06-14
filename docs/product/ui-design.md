@@ -6,7 +6,7 @@ Product-level look, layout, and interaction model for Domain. Complements [game-
 
 ## Look and Feel
 
-- **Simplicity** — Mostly text and static images. No unnecessary borders, shadows, or other decoration. Animate state changes only when explicitly requested.
+- **Simplicity** — Mostly text and static images. Few borders, shadows, or other decoration. Animate state changes only when explicitly requested.
 - **Dual tone** — Narration feels like a book being written. The domain dashboard feels like a board game / business application: compact lists, scannable data.
 - **Color** — Frugal palette. Reserve color for important data highlights so they stand out.
 
@@ -18,10 +18,12 @@ Section headings use muted uppercase labels. The narration column uses a serif t
 
 Two main sections, visible side by side on desktop:
 
-| Column | Role | Tone |
-|--------|------|------|
-| **Narration** (primary, wider) | Story, player input, turn flow | Book |
-| **Dashboard** (secondary, narrower) | Explore simulation state | Board game / dashboard |
+
+| Column                              | Role                           | Tone                   |
+| ----------------------------------- | ------------------------------ | ---------------------- |
+| **Narration** (primary, wider)      | Story, player input, turn flow | Book                   |
+| **Dashboard** (secondary, narrower) | Explore simulation state       | Board game / dashboard |
+
 
 On narrow viewports the columns stack: narration first, dashboard below.
 
@@ -81,24 +83,28 @@ Widget order (most important first):
 1. **Time** — Current date and period (morning / afternoon / night).
 2. **Resources** — Totals aggregated by type and subtype (not every stock line).
 3. **Characters** — Name and current place for each character.
-4. **Places** — Names grouped by region.
+4. **Places** — Region image and names grouped by region; place names as text links.
 
 #### Topic views
 
 Full lists with more detail than the home widgets:
 
-| Topic | Shows |
-|-------|-------|
-| **Resources** | Every stock entry, grouped by type → subtype |
-| **Characters** | Name, place, health, NPC type |
-| **Places** | Name, region, natural resources, characters present |
+
+| Topic          | Shows                                               |
+| -------------- | --------------------------------------------------- |
+| **Resources**  | Every stock entry, grouped by type → subtype        |
+| **Characters** | Name, place, health, NPC type                       |
+| **Places**     | Place image, name, region, natural resources, characters present |
+
 
 #### Entity sheets
 
-| Sheet | Shows |
-|-------|-------|
+
+| Sheet         | Shows                                                                                                                          |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | **Character** | All available character details: identity, descriptions, traits, attributes, health, place, turn budget, portrait when present |
-| **Place** | All available place details: name, region, natural resources, characters currently here |
+| **Place**     | Place image, name, region, natural resources, characters currently here                                                        |
+
 
 Sheets are the deepest level; breadcrumbs end at the entity name.
 
@@ -113,3 +119,4 @@ Sheets are the deepest level; breadcrumbs end at the entity name.
 ## Related Docs
 
 - [game-design.md](./game-design.md) — Core loop, narration vs simulation, action widgets
+

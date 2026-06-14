@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useGameState } from '@state/useGameState'
-import { useDashboardLookups } from '@ui/composables/useDashboardLookups'
-import { useDashboardNavigation } from '@ui/stores/dashboardNavigation'
+import { useGameState } from "@state/useGameState";
+import { useDashboardLookups } from "@ui/composables/useDashboardLookups";
+import { useDashboardNavigation } from "@ui/stores/dashboardNavigation";
 
-const nav = useDashboardNavigation()
-const gameState = useGameState()
-const { placeName } = useDashboardLookups()
+const nav = useDashboardNavigation();
+const gameState = useGameState();
+const { placeName } = useDashboardLookups();
 </script>
 
 <template>
@@ -27,7 +27,6 @@ const { placeName } = useDashboardLookups()
           >
             {{ character.name }}
           </button>
-          <span v-if="character.isPlayer" class="dash-tag">you</span>
         </span>
         <span class="dash-meta">{{ placeName(character.placeId) }}</span>
       </li>

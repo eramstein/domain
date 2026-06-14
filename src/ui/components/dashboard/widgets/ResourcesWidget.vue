@@ -2,50 +2,52 @@
 import { computed } from 'vue'
 
 import { useGameState } from '@state/useGameState'
-import { useDashboardNavigation } from '@ui/stores/dashboardNavigation'
 import type { ResourceSubtype, ResourceType } from '@/types'
 
 import {
   resourceSubtypeLabel,
   resourceTypeLabel,
 } from '../../../composables/useResourceLabels'
+import { useDashboardNavigation } from '@ui/stores/dashboardNavigation'
 
 const nav = useDashboardNavigation()
 const gameState = useGameState()
 
-interface ResourceAggregate {
-  type: ResourceType
+interface SubtypeTotal {
   subtype: ResourceSubtype
   total: number
 }
 
-const aggregates = computed(() => {
-  const map = new Map<string, ResourceAggregate>()
+interface TypeGroup {
+  type: ResourceType
+  subtypes: SubtypeTotal[]
+}
+
+const typeGroups = computed((): TypeGroup[] => {
+  const byType = new Map<ResourceType, Map<ResourceSubtype, number>>()
 
   for (const resource of gameState.resources) {
-    const key = `${resource.type}:${resource.subtype}`
-    const existing = map.get(key)
-    if (existing) {
-      existing.total += resource.amount
-    } else {
-      map.set(key, {
-        type: resource.type,
-        subtype: resource.subtype,
-        total: resource.amount,
-      })
-    }
+    const subtypes = byType.get(resource.type) ?? new Map()
+    subtypes.set(
+      resource.subtype,
+      (subtypes.get(resource.subtype) ?? 0) + resource.amount,
+    )
+    byType.set(resource.type, subtypes)
   }
 
-  return [...map.values()].sort((a, b) => {
-    const typeOrder = a.type.localeCompare(b.type)
-    if (typeOrder !== 0) return typeOrder
-    return a.subtype.localeCompare(b.subtype)
-  })
+  return [...byType.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([type, subtypes]) => ({
+      type,
+      subtypes: [...subtypes.entries()]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([subtype, total]) => ({ subtype, total })),
+    }))
 })
 </script>
 
 <template>
-  <section class="dash-widget">
+  <section class="dash-widget dash-resources-widget">
     <button
       type="button"
       class="dash-widget-title"
@@ -53,15 +55,24 @@ const aggregates = computed(() => {
     >
       Resources
     </button>
-    <ul class="dash-list">
-      <li v-for="aggregate in aggregates" :key="`${aggregate.type}:${aggregate.subtype}`">
-        <span class="dash-meta" style="text-align: left">
-          {{ resourceTypeLabel(aggregate.type) }} ·
-          {{ resourceSubtypeLabel(aggregate.subtype) }}
-        </span>
-        <span class="dash-amount">{{ aggregate.total }}</span>
-      </li>
-      <li v-if="aggregates.length === 0" class="dash-empty">—</li>
-    </ul>
+    <template v-if="typeGroups.length > 0">
+      <div
+        v-for="group in typeGroups"
+        :key="group.type"
+        class="dash-resource-group"
+      >
+        <h4 class="dash-resource-type">{{ resourceTypeLabel(group.type) }}</h4>
+        <ul class="dash-resource-grid">
+          <li
+            v-for="entry in group.subtypes"
+            :key="entry.subtype"
+          >
+            <span>{{ resourceSubtypeLabel(entry.subtype) }}</span>
+            <span class="dash-amount">{{ entry.total }}</span>
+          </li>
+        </ul>
+      </div>
+    </template>
+    <p v-else class="dash-empty">—</p>
   </section>
 </template>

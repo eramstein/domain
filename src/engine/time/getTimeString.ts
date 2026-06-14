@@ -42,6 +42,11 @@ function calendarDateForDay(startDate: string, simulationDay: number): Date {
   return date
 }
 
+export interface DashboardTimeLabel {
+  period: string
+  date: string
+}
+
 /** Format simulation day as a human-readable calendar date. */
 export function getTimeString(time: GameTime, startDate: string): string {
   const date = calendarDateForDay(startDate, time.day)
@@ -49,4 +54,19 @@ export function getTimeString(time: GameTime, startDate: string): string {
   const month = MONTHS[date.getMonth()]
 
   return `${weekday}, ${month} ${date.getDate()}, ${date.getFullYear()}`
+}
+
+/** Compact dashboard label: "Monday Morning" and "2 Jan 1404". */
+export function getDashboardTimeLabel(
+  time: GameTime,
+  startDate: string,
+): DashboardTimeLabel {
+  const date = calendarDateForDay(startDate, time.day)
+  const weekday = WEEKDAYS[date.getDay()]
+  const month = MONTHS[date.getMonth()]
+
+  return {
+    period: `${weekday} ${time.period}`,
+    date: `${date.getDate()} ${month} ${date.getFullYear()}`,
+  }
 }

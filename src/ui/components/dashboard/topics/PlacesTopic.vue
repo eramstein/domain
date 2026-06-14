@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PlaceImage from '../PlaceImage.vue'
 import { useDashboardLookups } from '@ui/composables/useDashboardLookups'
 import { useDashboardNavigation } from '@ui/stores/dashboardNavigation'
 import { usePlayerActions } from '@ui/composables/usePlayerActions'
@@ -7,7 +8,6 @@ const nav = useDashboardNavigation()
 const { player, executeResolvedAction } = usePlayerActions()
 const {
   regionsWithPlaces,
-  regionName,
   resourceName,
   charactersAtPlace,
 } = useDashboardLookups()
@@ -30,48 +30,54 @@ function collectResource(placeId: string, resourceId: string): void {
       <span class="dash-region-name">{{ region.name }}</span>
       <ul class="dash-list dash-place-list">
         <li v-for="place in places" :key="place.id" class="dash-place-item">
-          <div class="place-row">
+          <PlaceImage :place-id="place.id" :alt="place.name" />
+          <div class="place-details">
             <button
               type="button"
-              class="dash-link"
+              class="dash-link place-name"
               @click="nav.openPlace(place.id)"
             >
               {{ place.name }}
             </button>
-            <span class="dash-meta">{{ regionName(place.regionId) }}</span>
-          </div>
-          <ul
-            v-if="place.naturalResources.length > 0"
-            class="dash-list dash-sublist"
-          >
-            <li
-              v-for="naturalResource in place.naturalResources"
-              :key="naturalResource.resourceId"
+            <ul
+              v-if="place.naturalResources.length > 0"
+              class="dash-list dash-sublist"
             >
-              <button
-                type="button"
-                class="dash-link"
-                :disabled="!player"
-                @click="
-                  collectResource(place.id, naturalResource.resourceId)
-                "
+              <li
+                v-for="naturalResource in place.naturalResources"
+                :key="naturalResource.resourceId"
               >
-                {{ resourceName(naturalResource.resourceId) }}
-              </button>
-              <span class="dash-amount">{{ naturalResource.abundance }}</span>
-            </li>
-          </ul>
-          <p v-if="charactersAtPlace(place.id).length > 0" class="present">
-            <button
-              v-for="character in charactersAtPlace(place.id)"
-              :key="character.id"
-              type="button"
-              class="dash-link present-name"
-              @click="nav.openCharacter(character.id)"
+                <button
+                  type="button"
+                  class="dash-link"
+                  :disabled="!player"
+                  @click="
+                    collectResource(place.id, naturalResource.resourceId)
+                  "
+                >
+                  {{ resourceName(naturalResource.resourceId) }}
+                </button>
+                <span class="dash-amount">{{ naturalResource.abundance }}</span>
+              </li>
+            </ul>
+            <p
+              v-if="charactersAtPlace(place.id).length > 0"
+              class="place-present"
             >
-              {{ character.name }}
-            </button>
-          </p>
+              <span class="place-present-label">Present</span>
+              <span class="place-present-names">
+                <button
+                  v-for="character in charactersAtPlace(place.id)"
+                  :key="character.id"
+                  type="button"
+                  class="dash-link"
+                  @click="nav.openCharacter(character.id)"
+                >
+                  {{ character.name }}
+                </button>
+              </span>
+            </p>
+          </div>
         </li>
         <li v-if="places.length === 0" class="dash-empty">—</li>
       </ul>
@@ -81,23 +87,42 @@ function collectResource(placeId: string, resourceId: string): void {
 </template>
 
 <style scoped>
-.place-row {
+.dash-place-item + .dash-place-item {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--dash-border);
+}
+
+.place-details {
   display: flex;
-  justify-content: space-between;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.35rem;
 }
 
-.present {
-  margin: 0.25rem 0 0 0.75rem;
-  font-size: 0.8rem;
+.place-name {
+  color: var(--text);
 }
 
-.present-name {
-  font-weight: 400;
-  font-size: 0.8rem;
+.place-present {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+  margin: 0;
+  color: var(--text-muted);
 }
 
-.present-name:not(:last-child)::after {
-  content: ', ';
+.place-present-label {
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.place-present-names {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0 0.15rem;
+}
+
+.place-present-names .dash-link:not(:last-child)::after {
+  content: ',';
 }
 </style>

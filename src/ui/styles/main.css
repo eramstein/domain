@@ -2,8 +2,12 @@
   --text: #1a1816;
   --text-muted: #6b6560;
   --bg: #f7f5f2;
+  --dash-border: rgba(26, 24, 22, 0.1);
+  --dash-surface: rgba(255, 255, 255, 0.5);
+  --font-serif: Georgia, 'Times New Roman', serif;
+  --font-sans: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font-serif);
   line-height: 1.5;
   font-weight: 400;
   color: var(--text);

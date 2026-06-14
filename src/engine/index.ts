@@ -41,7 +41,7 @@ import {
   hasResourceStock,
   subtractResourceStock,
 } from './resources'
-import { getTimeString, passTurn } from './time'
+import { getDashboardTimeLabel, getTimeString, passTurn } from './time'
 
 /** Start or restart the game from static content. */
 export function engineInitializeGame(): void {
@@ -74,6 +74,11 @@ export function enginePassTurn(): void {
 /** Human-readable calendar date for the current simulation day. */
 export function engineGetTimeString(): string {
   return getTimeString(gameState.time, gameConfig.startDate)
+}
+
+/** Compact time label for the dashboard home view. */
+export function engineGetDashboardTimeLabel() {
+  return getDashboardTimeLabel(gameState.time, gameConfig.startDate)
 }
 
 /** Look up a place by id. */

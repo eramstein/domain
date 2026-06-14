@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+import PlaceImage from '../PlaceImage.vue'
 import { useDashboardLookups } from '@ui/composables/useDashboardLookups'
 import { useDashboardNavigation } from '@ui/stores/dashboardNavigation'
 import { usePlayerActions } from '@ui/composables/usePlayerActions'
@@ -41,6 +42,7 @@ function collectResource(resourceId: string): void {
 <template>
   <div v-if="place" class="place-sheet">
     <section class="dash-sheet-section">
+      <PlaceImage :place-id="place.id" :alt="place.name" />
       <h3>Location</h3>
       <p class="dash-name">{{ place.name }}</p>
       <p class="dash-meta" style="text-align: left">

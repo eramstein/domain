@@ -49,7 +49,7 @@ const groups = computed(() => {
       :key="`${group.type}:${group.subtype}`"
       class="dash-widget"
     >
-      <h3 class="group-heading">
+      <h3 class="dash-group-heading">
         {{ resourceTypeLabel(group.type) }} ·
         {{ resourceSubtypeLabel(group.subtype) }}
       </h3>
@@ -63,11 +63,3 @@ const groups = computed(() => {
     <p v-if="groups.length === 0" class="dash-empty">—</p>
   </div>
 </template>
-
-<style scoped>
-.group-heading {
-  margin: 0 0 0.5rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-</style>

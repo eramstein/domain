@@ -92,7 +92,6 @@ const longActionUsed = computed(
 
 <style scoped>
 .portrait-ref {
-  font-size: 0.85rem;
   color: var(--text-muted);
 }
 </style>

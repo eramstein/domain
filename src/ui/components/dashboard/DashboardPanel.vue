@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 
-import { engineGetTimeString } from '@engine/index'
+import { engineGetDashboardTimeLabel } from '@engine/index'
 import { useGameState } from '@state/useGameState'
 import {
   type DashboardTopic,
@@ -28,7 +28,7 @@ const nav = useDashboardNavigation()
 const { view } = storeToRefs(nav)
 const gameState = useGameState()
 
-const timeString = computed(() => engineGetTimeString())
+const timeLabel = computed(() => engineGetDashboardTimeLabel())
 
 const topicLabels: Record<DashboardTopic, string> = {
   resources: 'Resources',
@@ -77,30 +77,31 @@ const breadcrumbs = computed((): BreadcrumbSegment[] => {
 
 <template>
   <section class="dash-panel">
-    <h2 class="dash-heading">Domain</h2>
-    <DashboardBreadcrumbs :segments="breadcrumbs" />
-
     <template v-if="view.kind === 'home'">
       <TimeWidget
-        :time-string="timeString"
-        :period="gameState.time.period"
+        :period="timeLabel.period"
+        :date="timeLabel.date"
       />
       <ResourcesWidget />
       <CharactersWidget />
       <PlacesWidget />
     </template>
 
-    <ResourcesTopic v-else-if="view.kind === 'topic' && view.topic === 'resources'" />
-    <CharactersTopic v-else-if="view.kind === 'topic' && view.topic === 'characters'" />
-    <PlacesTopic v-else-if="view.kind === 'topic' && view.topic === 'places'" />
+    <template v-else>
+      <DashboardBreadcrumbs :segments="breadcrumbs" />
 
-    <CharacterSheet
-      v-else-if="view.kind === 'character'"
-      :character-id="view.characterId"
-    />
-    <PlaceSheet
-      v-else-if="view.kind === 'place'"
-      :place-id="view.placeId"
-    />
+      <ResourcesTopic v-if="view.kind === 'topic' && view.topic === 'resources'" />
+      <CharactersTopic v-else-if="view.kind === 'topic' && view.topic === 'characters'" />
+      <PlacesTopic v-else-if="view.kind === 'topic' && view.topic === 'places'" />
+
+      <CharacterSheet
+        v-else-if="view.kind === 'character'"
+        :character-id="view.characterId"
+      />
+      <PlaceSheet
+        v-else-if="view.kind === 'place'"
+        :place-id="view.placeId"
+      />
+    </template>
   </section>
 </template>
