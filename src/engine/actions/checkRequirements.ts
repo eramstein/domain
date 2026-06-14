@@ -1,15 +1,11 @@
 import type { GameState, ResolvedAction } from '@/types'
 
-import { checkCollectResourceRequirements } from './requirements/collectResource'
+import { getFirstRequirementFailure } from './requirements/registry'
 
 export function checkActionRequirements(
   state: GameState,
   characterId: string,
   resolved: ResolvedAction,
 ): string | undefined {
-  if (resolved.actionId === 'collect-resource') {
-    return checkCollectResourceRequirements(state, characterId, resolved)
-  }
-
-  return undefined
+  return getFirstRequirementFailure(state, characterId, resolved)?.message
 }

@@ -30,6 +30,11 @@ export function applyGameState(source: GameState): void {
   gameState.time = next.time
   gameState.regions = next.regions
   gameState.places = next.places
+  for (const character of next.characters) {
+    if (!character.actionQueue) {
+      character.actionQueue = []
+    }
+  }
   gameState.characters = next.characters
   gameState.resources = next.resources
   gameState.narration = next.narration

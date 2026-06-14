@@ -52,6 +52,10 @@ A character may perform **any number** of short actions per turn. Once a long ac
 
 **Requirement** — A test on game state that must pass for a given character to execute an action. Requirements are checked after parameter validation and turn-budget checks. When a requirement fails, the action is cancelled and the player is told why (for example, wrong location or missing resource at a place). Each action type defines its own requirements.
 
+**Action queue** — When an NPC wants to perform an action (either autonomously or via an order), and that action's prerequisites are not met, the engine plans a sequence of actions that lead to the target. For example, if the target action is `collect-resource` at `forest-clearing` and the character is not there, travel is queued first. Each turn, the NPC executes as many queued steps as the turn budget allows. If the goal can still run after travel, it runs in the same turn when budget permits; otherwise the remaining steps persist on the character's `actionQueue` until the next turn. Orders persist across turns until the goal succeeds, the player cancels, or a non-remediable requirement blocks progress (for example, the resource is gone).
+
+Requirement checks return structured failures (`RequirementKind`). Each action type registers requirement rules in a registry; rules may optionally supply a **prerequisite action** that satisfies the failed requirement (for example, `goto` with the required `placeId` when `at-place` fails). `planActionQueue` walks these rules to build the step list. New action types add rules without changing the planner.
+
 ### Configuration
 
 Actions are defined as static content and loaded at game start. Each entry describes one action the LLM can match against free-text input.
@@ -120,7 +124,9 @@ Example: "I go to the forest clearing" → go-to-place action with destination f
 
 - Return nothing if all requirements pass
 - Return a player-facing message if a requirement fails (for example, character not at the target place, or no gatherable resource at that place)
-- Requirements are defined per action type; only collect-resource is implemented so far
+- Requirements are registered per action type in `requirements/registry.ts`; each rule has a `kind`, a check function, and an optional prerequisite resolver
+
+**Plan action queue** — Given a goal resolved action, build an ordered list of steps (prerequisite actions first, goal last) using requirement rules and their prerequisite resolvers. Does not mutate state.
 
 **Check if action can execute** — Evaluate validity, turn budget, and requirements without mutating state.
 
@@ -196,8 +202,8 @@ Requirements are checked after parameter validation and before dispatch. Failed 
 
 Example for **collect resource**:
 
-- The character must be at the target **placeId**.
-- The place must list the target **resourceId** in its natural resources with abundance greater than zero.
+- **`at-place`** — The character must be at the target **placeId**. Prerequisite: `goto` that place.
+- **`resource-at-place`** — The place must list the target **resourceId** in its natural resources with abundance greater than zero. No prerequisite.
 
 Example failure messages: "You need to be at the Forest Clearing to collect oak wood there." or "There is no oak wood to collect at the Forest Clearing."
 
@@ -246,12 +252,10 @@ Future actions (for example, build using stock) will add their own requirement c
 
 Movement actions call into the Places system. Both within-region and cross-region moves use the same movement operation. Actions enforces long vs short rules before calling it; Places does not check turn budget.
 
-
 | Player intent              | Action cost | Handler system |
 | -------------------------- | ----------- | -------------- |
 | Move within same region    | Short       | Places         |
 | Move to a different region | Long        | Places         |
-
 
 ### Time integration
 
@@ -259,13 +263,11 @@ Individual actions do not advance time. The player performs multiple actions, en
 
 ### Resources integration
 
-
 | Player intent        | Typical action cost | Handler system              |
 | -------------------- | ------------------- | --------------------------- |
 | Collect resource     | Long                | Resources                   |
 | Trade away resources | Short               | Resources (future trade)    |
 | Build using stock    | Long                | Resources (future building) |
-
 
 Collect resource adds the place's natural-resource abundance to domain stock after Actions verifies the character is at the target place and the resource is present with abundance greater than zero.
 
@@ -286,4 +288,3 @@ Collect resource adds the place's natural-resource abundance to domain stock aft
 - When time advances to a new period, all characters' turn budgets reset.
 - NPCs follow the same resolution, budget, and dispatch rules as the player.
 - Action execution is deterministic given the same state and resolved action.
-

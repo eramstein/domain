@@ -1,5 +1,6 @@
 import type { GameState, ResolvedAction } from '@/types'
 
+import { planActionQueue } from '../actions/planActionQueue'
 import { isValidResolvedAction } from '../actions/validateAction'
 import { getPlaceById } from '../places/lookups'
 import { getCharacterById } from './lookups'
@@ -19,6 +20,7 @@ export function setNpcOrder(
   }
 
   character.order = resolved
+  character.actionQueue = planActionQueue(state, characterId, resolved)
   return { success: true }
 }
 
@@ -32,6 +34,7 @@ export function clearNpcOrder(
   }
 
   character.order = null
+  character.actionQueue = []
   return { success: true }
 }
 

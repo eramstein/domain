@@ -31,7 +31,7 @@ The Characters system does not:
 **Vertical slice (now):**
 
 - Character seeds with id, name, player flag, starting place, descriptions, portrait reference, personality traits, attributes, health, and NPC type
-- Runtime character records including position (`placeId`), turn budget (initialized at game start; budget rules owned by Actions), and pending ally orders (`order`)
+- Runtime character records including position (`placeId`), turn budget (initialized at game start; budget rules owned by Actions), ally goal (`order`), and planned steps (`actionQueue`)
 - Lookups: by id, player character, list all, filter by NPC type
 - NPCs execute orders from players, or by default execute collect resource action
 
@@ -177,7 +177,8 @@ The simulation holds a collection of character records. Each record carries:
 | `health`                 | Seed                 | Yes (future; seeded value only in vertical slice) |
 | `placeId`                | Seed → Places        | Yes (via Places movement)                         |
 | `turnBudget`             | Initialized at start | Yes (via Actions)                                 |
-| `order`                  | Initialized `null`   | Yes (via order assignment; cleared after NPC act) |
+| `order`                  | Initialized `null`   | Yes (via order assignment; cleared when goal completes, is cancelled, or is blocked) |
+| `actionQueue`            | Initialized `[]`     | Yes (replanned from `order` when set; updated each NPC turn)                       |
 
 Exactly one character must have `isPlayer: true`. NPC records must include `npcType`. The player character does not have `npcType`.
 
@@ -193,9 +194,9 @@ Exactly one character must have `isPlayer: true`. NPC records must include `npcT
 
 **List allies** — Shorthand for NPCs with `npcType: ally`.
 
-**Set ally order** — Store a resolved action on an ally's `order` field for execution at turn end. Only allies accept orders; parameters must be valid. Does not execute the action immediately.
+**Set ally order** — Store a resolved action on an ally's `order` field and plan an `actionQueue` toward that goal. Only allies accept orders; parameters must be valid. Does not execute the action immediately.
 
-**Execute NPC turns** — When the player ends the turn, each ally executes their stored order if present; otherwise they attempt a default collect-resource action at their current place when a gatherable resource exists. Orders are cleared after the attempt. Action execution uses the Actions system (budget, requirements, dispatch).
+**Execute NPC turns** — When the player ends the turn, each ally executes steps from a queue planned toward their stored order; otherwise they attempt a default collect-resource action at their current place when a gatherable resource exists. As many queued steps as the turn budget allows run each turn; remaining steps persist on `actionQueue`. Orders persist across turns until the goal succeeds, the player cancels, or a non-remediable requirement blocks progress. Default actions do not persist a queue. Action execution uses the Actions system (budget, requirements, dispatch, queue planning).
 
 Does not move characters directly, parse free text, reset turn budgets, or call the LLM.
 
@@ -280,7 +281,7 @@ NPCs use the same action definitions and turn-budget rules as the player. Ally o
 - Getting the player character returns the `isPlayer` record.
 - Listing characters by NPC type returns all and only matching NPCs.
 - Attributes are non-negative; health is `healthy` or `sick`.
-- Ally orders can be set on allies and are executed at turn end when prerequisites are met; allies without an order attempt default collect-resource at their place.
+- Ally orders can be set on allies; the engine plans prerequisite steps (for example, travel before gathering) and executes as many steps as the turn budget allows each turn. Orders persist until completed, cancelled, or blocked. Allies without an order attempt default collect-resource at their place.
 - Characters does not move characters directly, parse free text, or reset turn budgets.
 
 **Future (out of scope for vertical slice):**

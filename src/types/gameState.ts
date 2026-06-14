@@ -27,8 +27,10 @@ export interface Character {
   health: CharacterHealth
   placeId: string
   turnBudget: TurnBudget
-  /** Ally order for the current turn; cleared after NPC acts at turn end. */
+  /** Ally goal action; cleared when completed, cancelled, or blocked. */
   order: ResolvedAction | null
+  /** Planned steps toward `order`, including the goal; persists across turns. */
+  actionQueue: ResolvedAction[]
 }
 
 /** A natural resource occurrence at a place. */
